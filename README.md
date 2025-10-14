@@ -1,50 +1,366 @@
-# Welcome to your Expo app 👋
+# Citizen-Centric Services (CCS) Mobile App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A comprehensive React Native Expo app built with TypeScript for a Citizen-Centric Services platform. The app provides access to legal services, advocates, acts & rules, legislative assembly information, and more.
 
-## Get started
+## 🚀 Features
 
-1. Install dependencies
+### Core Modules
+
+- **Legal Aid & Advice** - Find advocates, notaries, and legal assistance
+- **Acts, Rules & Notifications** - Central and State Acts, Rules, and Notifications
+- **Legislative Assembly** - MLAs, Committees, Reports, and Live Proceedings
+- **Litigation Related** - Case Status, Cause List, and Landmark Judgments
+- **Law Education** - Universities, Courses, and Guidance Articles
+- **Advocates** - Enrollment, Appointment, and Welfare Schemes
+- **Document Registration** - Registration Guides, Templates, and Stamp Vendors
+- **Marriage Registration** - Hindu & Special Marriage Act Information
+- **Grievance & Feedback** - File complaints and provide feedback
+- **AI Chatbot** - Legal assistant for queries and guidance
+
+### Technical Features
+
+- **Offline Support** - Cache data for offline access using AsyncStorage
+- **Deep Linking** - Support for custom URL schemes and web links
+- **Modern UI** - Clean, responsive design with dark/light theme support
+- **Type Safety** - Full TypeScript implementation
+- **State Management** - Redux Toolkit for global state
+- **Navigation** - Expo Router with Tabs + Stack navigation
+- **Network Status** - Real-time network monitoring
+- **Responsive Design** - Optimized for different screen sizes
+
+## 🛠 Technology Stack
+
+- **Framework**: React Native with Expo (managed workflow)
+- **Language**: TypeScript
+- **Navigation**: Expo Router + React Navigation v6
+- **State Management**: Redux Toolkit
+- **Storage**: AsyncStorage for offline caching
+- **UI Components**: Custom components with Material Design principles
+- **API**: Axios for HTTP requests
+- **Icons**: Expo Vector Icons
+- **Network**: React Native Community NetInfo
+
+## 📱 App Structure
+
+```
+src/
+├── components/          # Reusable UI components
+│   ├── ui/             # Basic UI components (Button, Card, Input, etc.)
+│   ├── lists/          # List components (ListItem, etc.)
+│   └── forms/          # Form components
+├── screens/            # Screen components (organized by feature)
+├── services/           # API services and data layer
+├── store/              # Redux store and slices
+├── types/              # TypeScript interfaces and types
+├── utils/              # Utility functions (storage, linking, etc.)
+├── hooks/              # Custom React hooks
+└── constants/          # App constants and configuration
+```
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js (v16 or higher)
+- npm or yarn
+- Expo CLI
+- iOS Simulator (for iOS development)
+- Android Studio (for Android development)
+
+### Installation
+
+1. **Clone the repository**
+
+   ```bash
+   git clone <repository-url>
+   cd CCS_APP
+   ```
+
+2. **Install dependencies**
 
    ```bash
    npm install
    ```
 
-2. Start the app
+3. **Start the development server**
 
    ```bash
-   npx expo start
+   npm start
    ```
 
-In the output, you'll find options to open the app in a
+4. **Run on specific platforms**
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+   ```bash
+   # iOS
+   npm run ios
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+   # Android
+   npm run android
 
-## Get a fresh project
+   # Web
+   npm run web
+   ```
 
-When you're ready, run:
+## 📱 Navigation Structure
 
-```bash
-npm run reset-project
+### Tab Navigation (Bottom Tabs)
+
+- **Home** - Dashboard with quick access and popular services
+- **Services** - List of all available services
+- **Chatbot** - AI legal assistant
+- **Profile** - User profile and settings
+
+### Stack Navigation (Detail Screens)
+
+- Legal Aid screens
+- Acts & Rules screens
+- Legislative Assembly screens
+- Litigation screens
+- Law Education screens
+- Advocates screens
+- Document Registration screens
+- Marriage Registration screens
+- Grievance screens
+- Detail screens for specific items
+
+## 🔧 Configuration
+
+### Environment Variables
+
+Create a `.env` file in the root directory:
+
+```env
+API_BASE_URL=https://api.ccs.gov.in
+APP_SCHEME=ccs
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### Deep Linking
 
-## Learn more
+The app supports deep linking with the following schemes:
 
-To learn more about developing your project with Expo, look at the following resources:
+- `ccs://` - Custom app scheme
+- `https://ccs.gov.in` - Web domain
+- `https://app.ccs.gov.in` - App-specific domain
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+### Offline Support
 
-## Join the community
+The app automatically caches data for offline access:
 
-Join our community of developers creating universal apps.
+- Acts and Rules
+- Advocates information
+- Court directories
+- User preferences
+- Chat history
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## 🎨 UI Components
+
+### Available Components
+
+- **Button** - Customizable button with variants and icons
+- **Card** - Container component with elevation and borders
+- **Input** - Text input with validation and icons
+- **SearchBar** - Search input with filter options
+- **ListItem** - List item with icons, badges, and actions
+- **NetworkStatus** - Network connectivity indicator
+
+### Theme Support
+
+- Light and dark theme support
+- Automatic theme switching based on system preferences
+- Customizable colors and typography
+
+## 📊 State Management
+
+### Redux Store Structure
+
+```typescript
+{
+  app: AppState,           // Global app state
+  legalAid: LegalAidState, // Legal aid data
+  actsRules: ActsRulesState, // Acts and rules data
+  litigation: LitigationState, // Litigation data
+  grievance: GrievanceState, // Grievance data
+  chatbot: ChatbotState    // Chatbot messages
+}
+```
+
+### Data Flow
+
+1. User interactions trigger actions
+2. Actions update Redux store
+3. Components subscribe to store changes
+4. UI updates automatically
+
+## 🔌 API Integration
+
+### Service Layer
+
+- Centralized API configuration
+- Request/response interceptors
+- Error handling
+- Mock data for development
+
+### Endpoints
+
+- `/advocates` - Advocate information
+- `/courts` - Court directories
+- `/acts` - Legal acts
+- `/rules` - Legal rules
+- `/notifications` - Government notifications
+- `/complaints` - Grievance submissions
+
+## 📱 Platform Support
+
+### iOS
+
+- iOS 13.0+
+- iPhone and iPad support
+- App Store optimization
+
+### Android
+
+- Android 6.0+ (API level 23)
+- Phone and tablet support
+- Google Play Store optimization
+
+### Web
+
+- Progressive Web App (PWA) support
+- Responsive design
+- Browser compatibility
+
+## 🧪 Testing
+
+### Running Tests
+
+```bash
+# Run all tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with coverage
+npm run test:coverage
+```
+
+### Test Structure
+
+- Unit tests for utilities and hooks
+- Component tests for UI components
+- Integration tests for screens
+- E2E tests for critical user flows
+
+## 🚀 Deployment
+
+### Development Build
+
+```bash
+# Create development build
+expo build:android
+expo build:ios
+```
+
+### Production Build
+
+```bash
+# Create production build
+expo build:android --type apk
+expo build:ios --type archive
+```
+
+### App Store Deployment
+
+1. Configure app.json with production settings
+2. Build production version
+3. Submit to respective app stores
+4. Configure deep linking on web servers
+
+## 🔒 Security
+
+### Data Protection
+
+- Secure storage for sensitive data
+- API key protection
+- User data encryption
+- Privacy compliance
+
+### Authentication
+
+- User authentication flow
+- Session management
+- Secure token storage
+
+## 📈 Performance
+
+### Optimization
+
+- Lazy loading for screens
+- Image optimization
+- Bundle size optimization
+- Memory management
+
+### Monitoring
+
+- Performance metrics
+- Error tracking
+- User analytics
+- Crash reporting
+
+## 🤝 Contributing
+
+### Development Workflow
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests for new features
+5. Submit a pull request
+
+### Code Standards
+
+- TypeScript for type safety
+- ESLint for code quality
+- Prettier for code formatting
+- Conventional commits
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🆘 Support
+
+### Documentation
+
+- API documentation
+- Component documentation
+- Deployment guides
+- Troubleshooting
+
+### Contact
+
+- Email: support@ccs.gov.in
+- Website: https://ccs.gov.in
+- Documentation: https://docs.ccs.gov.in
+
+## 🔄 Version History
+
+### v1.0.0 (Current)
+
+- Initial release
+- Core features implementation
+- Offline support
+- Deep linking
+- Theme support
+
+### Future Releases
+
+- Enhanced AI chatbot
+- Video streaming for live proceedings
+- Advanced search and filtering
+- Push notifications
+- Multi-language support
+
+---
+
+**Built with ❤️ for Citizen-Centric Services**
