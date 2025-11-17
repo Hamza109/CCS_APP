@@ -8,10 +8,12 @@ import { useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
+import LocationPermissionGate from "../src/components/system/LocationPermissionGate";
+import PageHitTracker from "../src/components/system/PageHitTracker";
 import NetworkStatus from "../src/components/ui/NetworkStatus";
 import { useNetworkStatus } from "../src/hooks/useNetworkStatus";
 import { useOfflineData } from "../src/hooks/useOfflineData";
-import { persistor, store } from "../src/store";
+import { persistor, store, useAppSelector } from "../src/store";
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
@@ -20,6 +22,9 @@ function AppContent() {
   useNetworkStatus();
   const { loadCachedData } = useOfflineData();
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+  const locationPermissionRequestKey = useAppSelector(
+    (state) => state.app.locationPermissionRequestToken
+  );
 
   useEffect(() => {
     loadCachedData();
@@ -46,6 +51,8 @@ function AppContent() {
 
   return (
     <>
+      <LocationPermissionGate requestKey={locationPermissionRequestKey} />
+      <PageHitTracker canRequestLocation={locationPermissionRequestKey > 0} />
       <StatusBar style='light' backgroundColor='#1E3A8A' />
       <NetworkStatus />
       <Stack screenOptions={{ headerShown: false }}>

@@ -16,17 +16,21 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import BlueHeader from "../../src/components/ui/BlueHeader";
 import Card from "../../src/components/ui/Card";
-import { useHighCourtCaseDetails } from "../../src/hooks/useHighCourt";
+import {
+  useHighCourtCaseDetails,
+  useHighCourtList,
+} from "../../src/hooks/useHighCourt";
 import highCourtApi from "../../src/services/highCourtApi";
 import { useAppSelector } from "../../src/store";
 
 const HighCourtResultScreen: React.FC = () => {
   const theme = useAppSelector((s) => s.app.theme);
-  const { est_code, case_type, reg_year, reg_no } = useLocalSearchParams<{
+  const { est_code, case_type, reg_year, reg_no, cino } = useLocalSearchParams<{
     est_code?: string;
     case_type?: string;
     reg_year?: string;
     reg_no?: string;
+    cino?: string;
   }>();
 
   const params =
@@ -39,7 +43,18 @@ const HighCourtResultScreen: React.FC = () => {
         }
       : undefined;
 
-  const { data, isLoading, error } = useHighCourtCaseDetails(params);
+  const useCino = !!cino;
+  // When cino is provided, use the generic search API filtered by cino
+  const listForCino = useCino
+    ? useHighCourtList({ cino: String(cino), per_page: 1, page: 1 })
+    : undefined;
+  const { data, isLoading, error } = useCino
+    ? {
+        data: { search: null, detail: listForCino?.data?.data?.[0] } as any,
+        isLoading: !!listForCino?.isLoading,
+        error: listForCino?.error,
+      }
+    : useHighCourtCaseDetails(params);
   const [downloadingOrder, setDownloadingOrder] = useState<string | null>(null);
 
   useEffect(() => {
@@ -53,17 +68,19 @@ const HighCourtResultScreen: React.FC = () => {
     theme === "dark" && styles.darkContainer,
   ];
 
-  const firstCase = (() => {
-    const casenos = data?.search?.casenos;
-    if (!casenos) return undefined;
-    const values = Object.values(casenos as any);
-    return values?.[0] as any;
-  })();
+  const firstCase = useCino
+    ? undefined
+    : (() => {
+        const casenos = data?.search?.casenos;
+        if (!casenos) return undefined;
+        const values = Object.values(casenos as any);
+        return values?.[0] as any;
+      })();
 
   const renderRow = (label: string, value?: string | number | null) => (
     <View style={styles.row}>
       <Text style={styles.label}>{label}</Text>
-      <Text style={styles.value} numberOfLines={2}>
+      <Text style={styles.value} numberOfLines={3}>
         {value ? String(value) : "-"}
       </Text>
     </View>
@@ -77,6 +94,26 @@ const HighCourtResultScreen: React.FC = () => {
       </Text>
     </View>
   );
+
+  const isPresent = (v: any) => {
+    if (v === null || v === undefined) return false;
+    const s = String(v).trim();
+    return s.length > 0 && s !== "null" && s !== "undefined";
+  };
+
+  const renderIf = (label: string, value: any) =>
+    isPresent(value) ? renderRow(label, value) : null;
+
+  const parseJson = (maybeJson: any) => {
+    if (!isPresent(maybeJson) || typeof maybeJson !== "string") return null;
+    const s = maybeJson.trim();
+    if (!(s.startsWith("{") && s.endsWith("}"))) return null;
+    try {
+      return JSON.parse(s);
+    } catch {
+      return null;
+    }
+  };
 
   const getStatusPill = (pendDisp?: string | null) => {
     const normalized = pendDisp ? String(pendDisp).toUpperCase() : "";
@@ -107,9 +144,10 @@ const HighCourtResultScreen: React.FC = () => {
         <View style={styles.mainContent}>
           <ScrollView contentContainerStyle={styles.content}>
             {isLoading && (
-              <Card style={styles.card}>
-                <Text>Loading...</Text>
-              </Card>
+              <View style={styles.loaderWrap}>
+                <ActivityIndicator size='large' color='#1E3A8A' />
+                <Text style={styles.loaderText}>Fetching case details…</Text>
+              </View>
             )}
 
             {error && (
@@ -134,69 +172,76 @@ const HighCourtResultScreen: React.FC = () => {
 
             {!!data?.detail && (
               <>
-                {/* Case Details */}
+                {/* Case Overview */}
                 <Card style={styles.card}>
                   <View style={styles.cardHeader}>
-                    <Text style={styles.title}>Case Details</Text>
-                  </View>
-                  {renderCodeRow("CINO", data.detail.cino)}
-                  {renderRow("Case Type", data.detail.type_name_fil)}
-                  {renderRow(
-                    "Filing No/Year",
-                    `${data.detail.fil_no || "-"} / ${
-                      data.detail.fil_year || "-"
-                    }`
-                  )}
-                  {renderRow(
-                    "Reg No/Year",
-                    `${data.detail.reg_no || "-"} / ${
-                      data.detail.reg_year || "-"
-                    }`
-                  )}
-                  {renderRow("Court", data.detail.court_est_name)}
-                  {renderRow(
-                    "State / District",
-                    `${data.detail.state_name || "-"} / ${
-                      data.detail.dist_name || "-"
-                    }`
-                  )}
-                  {renderRow("Filing Date", data.detail.date_of_filing)}
-                  {renderRow("Registration Date", data.detail.dt_regis)}
-                </Card>
-
-                {/* Case Status */}
-                <Card style={styles.card}>
-                  <View style={styles.cardHeader}>
-                    <Text style={styles.title}>Case Status</Text>
+                    <Text style={styles.title}>Case Overview</Text>
                     {getStatusPill(data.detail.pend_disp)}
                   </View>
-                  {renderRow("First Hearing", data.detail.date_first_list)}
-                  {renderRow("Next Hearing", data.detail.date_next_list)}
-                  {renderRow(
-                    "Purpose",
-                    data.detail.purpose_name
-                      ? he.decode(String(data.detail.purpose_name))
-                      : "-"
+                  {isPresent(data.detail.cino) &&
+                    renderCodeRow("CINO", data.detail.cino)}
+                  {renderIf(
+                    "Case Type",
+                    data.detail.type_name_fil || data.detail.type_name_reg
                   )}
-                  {renderRow(
-                    "Coram",
-                    data.detail.coram
-                      ? he.decode(String(data.detail.coram))
-                      : "-"
-                  )}
-                  {renderRow("Short Order", data.detail.short_order)}
+                  {isPresent(data.detail.fil_no) ||
+                  isPresent(data.detail.fil_year)
+                    ? renderRow(
+                        "Filing No/Year",
+                        `${data.detail.fil_no || "-"} / ${
+                          data.detail.fil_year || "-"
+                        }`
+                      )
+                    : null}
+                  {isPresent(data.detail.reg_no) ||
+                  isPresent(data.detail.reg_year)
+                    ? renderRow(
+                        "Reg No/Year",
+                        `${data.detail.reg_no || "-"} / ${
+                          data.detail.reg_year || "-"
+                        }`
+                      )
+                    : null}
+                  {renderIf("Filing Date", data.detail.date_of_filing)}
+                  {renderIf("Registration Date", data.detail.dt_regis)}
+                  {renderIf("Short Order", data.detail.short_order)}
                 </Card>
 
+                {/* Court & Bench */}
+                {(isPresent(data.detail.court_est_name) ||
+                  isPresent(data.detail.bench_name) ||
+                  isPresent(data.detail.judicial_branch) ||
+                  isPresent(data.detail.coram) ||
+                  isPresent(data.detail.purpose_name)) && (
+                  <Card style={styles.card}>
+                    <View style={styles.cardHeader}>
+                      <Text style={styles.title}>Court & Bench</Text>
+                    </View>
+                    {renderIf("Court", data.detail.court_est_name)}
+                    {renderIf("Bench", data.detail.bench_name)}
+                    {renderIf("Branch", data.detail.judicial_branch)}
+                    {isPresent(data.detail.coram)
+                      ? renderRow("Coram", he.decode(String(data.detail.coram)))
+                      : null}
+                    {renderIf("Purpose", data.detail.purpose_name)}
+                  </Card>
+                )}
+
                 {/* Parties & Advocates */}
-                <Card style={styles.card}>
-                  <View style={styles.cardHeader}>
-                    <Text style={styles.title}>Parties & Advocates</Text>
-                  </View>
-                  {renderRow("Petitioner", data.detail.pet_name)}
-                  {renderRow("Petitioner Advocate", data.detail.pet_adv)}
-                  {renderRow("Respondent", data.detail.res_name)}
-                  {renderRow("Respondent Advocate", data.detail.res_adv)}
-                </Card>
+                {(isPresent(data.detail.pet_name) ||
+                  isPresent(data.detail.pet_adv) ||
+                  isPresent(data.detail.res_name) ||
+                  isPresent(data.detail.res_adv)) && (
+                  <Card style={styles.card}>
+                    <View style={styles.cardHeader}>
+                      <Text style={styles.title}>Parties & Advocates</Text>
+                    </View>
+                    {renderIf("Petitioner", data.detail.pet_name)}
+                    {renderIf("Petitioner Advocate", data.detail.pet_adv)}
+                    {renderIf("Respondent", data.detail.res_name)}
+                    {renderIf("Respondent Advocate", data.detail.res_adv)}
+                  </Card>
+                )}
 
                 {/* Interim Orders */}
                 {!!data.detail.interimorder && (
@@ -284,41 +329,179 @@ const HighCourtResultScreen: React.FC = () => {
                   </Card>
                 )}
 
+                {/* Acts (from stringified fields) */}
+                {(() => {
+                  const actsObj = parseJson(data.detail.act1_name);
+                  const sectionObj = parseJson(data.detail.act1_section);
+                  const actEntry =
+                    actsObj && actsObj.act1 ? actsObj.act1 : null;
+                  const sections = sectionObj
+                    ? Object.values<any>(sectionObj).filter(Boolean)
+                    : [];
+                  if (!actEntry && sections.length === 0) return null;
+                  return (
+                    <Card style={styles.card}>
+                      <View style={styles.cardHeader}>
+                        <Text style={styles.title}>Acts</Text>
+                      </View>
+                      {actEntry &&
+                        renderRow(
+                          "Act",
+                          `${actEntry.actname || "-"}${
+                            actEntry.section
+                              ? ` (Section ${actEntry.section})`
+                              : ""
+                          }`
+                        )}
+                      {sections.map((sec: any, idx: number) => {
+                        const downloadKey = `act-section-${
+                          sec?.order_no || idx
+                        }_${sec?.order_date || ""}`;
+                        const canDownload =
+                          isPresent(data.detail.cino) &&
+                          isPresent(sec?.order_no) &&
+                          isPresent(sec?.order_date);
+                        return (
+                          <View key={downloadKey} style={styles.orderEntry}>
+                            {isPresent(sec?.order_no) && (
+                              <View style={styles.row}>
+                                <Text style={styles.label}>Order No</Text>
+                                <Text style={styles.value}>{sec.order_no}</Text>
+                              </View>
+                            )}
+                            {isPresent(sec?.order_date) && (
+                              <View style={styles.row}>
+                                <Text style={styles.label}>Order Date</Text>
+                                <Text style={styles.value}>
+                                  {sec.order_date}
+                                </Text>
+                              </View>
+                            )}
+                            {isPresent(sec?.order_details) && (
+                              <View style={styles.row}>
+                                <Text style={styles.label}>Details</Text>
+                                <Text style={styles.value} numberOfLines={2}>
+                                  {sec.order_details}
+                                </Text>
+                              </View>
+                            )}
+                            {canDownload && (
+                              <View style={styles.downloadWrapper}>
+                                {downloadingOrder === downloadKey ? (
+                                  <ActivityIndicator
+                                    size='small'
+                                    color='#1E3A8A'
+                                  />
+                                ) : (
+                                  <Text
+                                    style={styles.downloadLink}
+                                    onPress={async () => {
+                                      try {
+                                        setDownloadingOrder(downloadKey);
+                                        const { pdfBase64 } =
+                                          await highCourtApi.getOrderDownloadUrl(
+                                            String(data.detail.cino),
+                                            String(sec.order_no),
+                                            String(sec.order_date)
+                                          );
+                                        if (!pdfBase64) return;
+                                        const fileUri = `${
+                                          FileSystem.cacheDirectory
+                                        }order_${String(sec.order_no)}.pdf`;
+                                        await FileSystem.writeAsStringAsync(
+                                          fileUri,
+                                          pdfBase64,
+                                          { encoding: "base64" }
+                                        );
+                                        if (await Sharing.isAvailableAsync()) {
+                                          await Sharing.shareAsync(fileUri);
+                                        } else {
+                                          console.log("PDF saved at:", fileUri);
+                                        }
+                                      } catch (e) {
+                                        console.log(
+                                          "Failed to fetch order PDF",
+                                          e
+                                        );
+                                      } finally {
+                                        setDownloadingOrder(null);
+                                      }
+                                    }}
+                                  >
+                                    <FontAwesome
+                                      name='download'
+                                      size={20}
+                                      color='#1E3A8A'
+                                    />
+                                  </Text>
+                                )}
+                              </View>
+                            )}
+                          </View>
+                        );
+                      })}
+                    </Card>
+                  );
+                })()}
+
+                {/* Hearings (from stringified field) */}
+                {(() => {
+                  const hearingsObj = parseJson(
+                    data.detail.hearing1_causelist_type
+                  );
+                  if (!hearingsObj) return null;
+                  const entries = Object.values<any>(hearingsObj);
+                  if (!entries || entries.length === 0) return null;
+                  return (
+                    <Card style={styles.card}>
+                      <View style={styles.cardHeader}>
+                        <Text style={styles.title}>Hearings</Text>
+                      </View>
+                      {entries.map((h: any, idx: number) => (
+                        <View key={idx} style={styles.historyItem}>
+                          {renderIf("Hearing Date", h?.hearing_date)}
+                          {renderIf("Purpose", h?.purpose_of_listing)}
+                          {isPresent(h?.judge_name)
+                            ? renderRow(
+                                "Judge",
+                                he.decode(String(h.judge_name))
+                              )
+                            : null}
+                          {renderIf("Causelist Type", h?.causelist_type)}
+                        </View>
+                      ))}
+                    </Card>
+                  );
+                })()}
+
                 {/* Subject / Category */}
                 {!!data.detail.category_details && (
                   <Card style={styles.card}>
                     <View style={styles.cardHeader}>
                       <Text style={styles.title}>Subject</Text>
                     </View>
-                    {renderRow(
+                    {renderIf(
                       "Category",
                       data.detail.category_details?.category
                     )}
-                    {renderRow(
+                    {renderIf(
                       "Sub-Category",
                       data.detail.category_details?.sub_category
                     )}
                   </Card>
                 )}
 
-                {/* Acts */}
-                {!!data.detail.acts && (
+                {/* Final Order */}
+                {(isPresent(data.detail.finalorder_no) ||
+                  isPresent(data.detail.finalorder_date) ||
+                  isPresent(data.detail.finalorder_details)) && (
                   <Card style={styles.card}>
                     <View style={styles.cardHeader}>
-                      <Text style={styles.title}>Acts</Text>
+                      <Text style={styles.title}>Final Order</Text>
                     </View>
-                    {Object.values<any>(data.detail.acts).map(
-                      (a: any, idx: number) => (
-                        <View key={idx}>
-                          {renderRow(
-                            "Act",
-                            `${a?.actname || "-"}${
-                              a?.section ? ` (Section ${a.section})` : ""
-                            }`
-                          )}
-                        </View>
-                      )
-                    )}
+                    {renderIf("Order No", data.detail.finalorder_no)}
+                    {renderIf("Order Date", data.detail.finalorder_date)}
+                    {renderIf("Details", data.detail.finalorder_details)}
                   </Card>
                 )}
 
@@ -337,19 +520,19 @@ const HighCourtResultScreen: React.FC = () => {
                             idx !== arr.length - 1 && styles.historyItemDivider,
                           ]}
                         >
-                          {renderRow("Date", h?.hearing_date)}
-                          {renderRow(
-                            "Purpose",
-                            h?.purpose_of_listing
-                              ? he.decode(String(h.purpose_of_listing))
-                              : "-"
-                          )}
-                          {renderRow(
-                            "Judge",
-                            h?.judge_name
-                              ? he.decode(String(h.judge_name))
-                              : "-"
-                          )}
+                          {renderIf("Date", h?.hearing_date)}
+                          {isPresent(h?.purpose_of_listing)
+                            ? renderRow(
+                                "Purpose",
+                                he.decode(String(h.purpose_of_listing))
+                              )
+                            : null}
+                          {isPresent(h?.judge_name)
+                            ? renderRow(
+                                "Judge",
+                                he.decode(String(h.judge_name))
+                              )
+                            : null}
                         </View>
                       )
                     )}
@@ -379,6 +562,16 @@ const styles = StyleSheet.create({
   content: { padding: 16 },
   card: { marginBottom: 12, padding: 12 },
   title: { fontSize: 14, fontWeight: "700", marginBottom: 8 },
+  loaderWrap: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 40,
+    gap: 12,
+  },
+  loaderText: {
+    fontSize: 12,
+    color: "#6B7280",
+  },
   item: { fontSize: 12, color: "#111827", marginBottom: 4 },
   cardHeader: {
     flexDirection: "row",
@@ -433,6 +626,10 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   downloadLink: { color: "#1E3A8A", fontWeight: "700", fontSize: 12 },
+  downloadWrapper: {
+    alignItems: "flex-end",
+    marginTop: 4,
+  },
   error: { color: "#B00020" },
   jsonText: {
     fontFamily: Platform.select({ ios: "Courier", android: "monospace" }),
@@ -446,6 +643,11 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#E5E7EB",
     marginBottom: 6,
+  },
+  orderEntry: {
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E5E5E5",
   },
 });
 

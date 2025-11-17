@@ -6,9 +6,11 @@ export const ROUTES = {
   SEARCH_CASE: {
     ROOT: "/search-case" as const,
     HIGH_COURT_SEARCH: "/search-case/high-court-search" as const,
+    HIGH_COURT_LIST: "/search-case/high-court-list" as const,
     HIGH_COURT_RESULT: "/search-case/high-court-result" as const,
     DISTRICT_COURT_SEARCH: "/search-case/district-court-search" as const,
     CAT_SEARCH: "/search-case/cat-search" as const,
+    CAT_LIST: "/search-case/cat-list" as const,
     CAT_RESULT: "/search-case/cat-result" as const,
     FCR_COURT_SEARCH: "/search-case/fcr-court-search" as const,
   } as const,

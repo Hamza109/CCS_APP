@@ -101,6 +101,242 @@ src/
    npm run web
    ```
 
+## 🚀 Development Commands
+
+### Development Mode
+
+Start the Expo development server:
+
+```bash
+# Start Expo dev server
+npx expo start
+
+# Or using npm script
+npm start
+```
+
+**Options:**
+
+- Press `i` to open iOS simulator
+- Press `a` to open Android emulator
+- Press `w` to open in web browser
+- Press `r` to reload the app
+- Press `m` to toggle menu
+- Press `j` to open debugger
+
+### Development with Specific Options
+
+```bash
+# Start with tunnel (for testing on physical devices)
+npx expo start --tunnel
+
+# Start with LAN (local network)
+npx expo start --lan
+
+# Start with localhost only
+npx expo start --localhost
+
+# Clear cache and start
+npx expo start --clear
+
+# Start in web mode
+npx expo start --web
+```
+
+### Development Build (Dev Client)
+
+For apps using custom native code or development builds:
+
+```bash
+# Run on iOS simulator/device
+npx expo run:ios
+
+# Run on Android emulator/device
+npx expo run:android
+
+# Run on specific device
+npx expo run:ios --device
+npx expo run:android --device
+
+# Run with specific configuration
+npx expo run:ios --configuration Debug
+npx expo run:android --variant debug
+```
+
+### Preview Mode
+
+Preview builds for testing before production:
+
+```bash
+# Build preview for iOS
+eas build --profile preview --platform ios
+
+# Build preview for Android
+eas build --profile preview --platform android
+
+# Build preview for both platforms
+eas build --profile preview --platform all
+
+# Build and submit to TestFlight (iOS)
+eas build --profile preview --platform ios --auto-submit
+
+# Build and submit to Internal Testing (Android)
+eas build --profile preview --platform android --auto-submit
+```
+
+### Development Server with Preview
+
+```bash
+# Start dev server with tunnel for preview
+npx expo start --tunnel
+
+# Start dev server and generate QR code for preview
+npx expo start --dev-client
+```
+
+### Testing App Icon
+
+To verify your app icon is properly configured, you need to create a build (icons don't appear in Expo Go):
+
+**Icon Requirements:**
+
+- **iOS**: 1024x1024px PNG (no transparency)
+- **Android**: 1024x1024px PNG (adaptive icon: foreground 1024x1024px, background optional)
+
+**Quick Test - Development Build (Fastest):**
+
+```bash
+# Build development client for iOS (simulator/device)
+npx expo run:ios
+
+# Build development client for Android (emulator/device)
+npx expo run:android
+
+# After build completes, install on device to see the icon
+```
+
+**Best Test - Preview Build (Most Accurate):**
+
+Preview builds are closest to production and best for testing icons:
+
+```bash
+# Build preview for iOS (downloads .ipa file)
+eas build --profile preview --platform ios
+
+# Build preview for Android (downloads .apk or .aab file)
+eas build --profile preview --platform android
+
+# After build completes:
+# - iOS: Install via TestFlight or direct install
+# - Android: Install the .apk file on your device
+```
+
+**Check Icon Configuration:**
+
+```bash
+# Verify icon file exists and check its properties
+ls -lh assets/images/icon.png
+
+# Preview icon in app.json
+cat app.json | grep -A 5 "icon"
+```
+
+**Icon Testing Checklist:**
+
+- ✅ Icon appears on home screen
+- ✅ Icon appears in app switcher/multitasking
+- ✅ Icon appears in settings
+- ✅ Icon scales properly on different screen sizes
+- ✅ Android adaptive icon works (foreground/background)
+- ✅ Icon looks good on light and dark backgrounds (Android)
+
+**Note:** Icons are only visible in actual builds, not in Expo Go or web preview.
+
+**When to Run Prebuild:**
+
+Since you have native folders (`android/` and `ios/`), here's when you need `prebuild`:
+
+```bash
+# Run prebuild to update native configs from app.json
+npx expo prebuild
+
+# Clean prebuild (removes and regenerates native folders)
+npx expo prebuild --clean
+```
+
+**Do you need prebuild?**
+
+- ✅ **YES** - If you changed `app.json` configs (icon, splash, bundle ID, etc.) and want to ensure native folders are updated
+- ✅ **YES** - If you're getting build errors related to missing native configs
+- ❌ **NO** - If using `expo run:ios` or `expo run:android` (they auto-prebuild)
+- ❌ **NO** - If using EAS builds (EAS handles prebuild automatically)
+
+**Recommended workflow after icon changes:**
+
+```bash
+# Option 1: Let expo run handle it automatically
+npx expo run:ios        # or npx expo run:android
+
+# Option 2: Explicitly update configs first (recommended after config changes)
+npx expo prebuild
+npx expo run:ios        # or npx expo run:android
+```
+
+### EAS Build Commands
+
+```bash
+# List all builds
+eas build:list
+
+# View build details
+eas build:view
+
+# Cancel a build
+eas build:cancel
+
+# Download build
+eas build:download
+```
+
+### Other Useful Commands
+
+```bash
+# Install Expo CLI globally (if needed)
+npm install -g expo-cli
+
+# Check Expo CLI version
+npx expo --version
+
+# Login to Expo account
+npx expo login
+
+# Logout from Expo account
+npx expo logout
+
+# Check current account
+npx expo whoami
+
+# Initialize EAS project
+eas init
+
+# Configure EAS
+eas build:configure
+
+# Update Expo SDK
+npx expo install expo@latest
+
+# Clear Metro bundler cache
+npx expo start --clear
+
+# Clear watchman cache
+watchman watch-del-all
+
+# Reset project (clear all caches)
+rm -rf node_modules
+npm install
+npx expo start --clear
+```
+
 ## 📱 Navigation Structure
 
 ### Tab Navigation (Bottom Tabs)

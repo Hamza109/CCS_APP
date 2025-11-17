@@ -5,6 +5,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Button from "../../src/components/ui/Button";
 import Input from "../../src/components/ui/Input";
+import { otpApi } from "../../src/services/otpApi";
 import { useAppDispatch } from "../../src/store";
 import { setToken } from "../../src/store/slices/authSlice";
 
@@ -35,22 +36,71 @@ const OTPScreen: React.FC = () => {
   }, [phone]);
 
   const handleVerify = async () => {
-    if (!/^\d{4,6}$/.test(otp)) {
-      setError("Enter the OTP sent to your phone");
+    if (!/^\d{6}$/.test(otp)) {
+      setError("Enter the 6-digit OTP sent to your phone");
       return;
     }
     setError(undefined);
-    const token = "mock-token";
-    dispatch(setToken(token));
+
     try {
+      // Get stored OTP from local storage
+      const storedOtp = await SecureStore.getItemAsync("pending_otp");
+      const storedPhone = await SecureStore.getItemAsync("pending_phone");
+
+      if (!storedOtp) {
+        setError("OTP expired. Please request a new one.");
+        return;
+      }
+
+      // Verify entered OTP against stored OTP
+      if (otp !== storedOtp) {
+        setError("Invalid OTP. Please try again.");
+        return;
+      }
+
+      // OTP verified successfully - grant access
+      const token = `token_${storedPhone}_${Date.now()}`;
+      dispatch(setToken(token));
       await SecureStore.setItemAsync("auth_token", token);
-    } catch {}
-    router.replace("/(tabs)");
+
+      // Clean up stored OTP
+      await SecureStore.deleteItemAsync("pending_otp");
+      await SecureStore.deleteItemAsync("pending_phone");
+
+      router.replace("/(tabs)");
+    } catch (err: any) {
+      console.error("OTP verification error:", err);
+      setError("Verification failed. Please try again.");
+    }
   };
 
-  const handleResend = () => {
+  const handleResend = async () => {
     if (secondsLeft > 0) return;
-    setSecondsLeft(RESEND_SECONDS);
+
+    if (!phone) {
+      setError("Phone number not found");
+      return;
+    }
+
+    try {
+      setError(undefined);
+      const mobileNumber = `91${phone}`;
+      const response = await otpApi.send({
+        mobile_number: mobileNumber,
+      });
+
+      const receivedOtp = response.otp;
+      if (!receivedOtp) {
+        throw new Error("OTP not received from server");
+      }
+
+      // Save new OTP locally
+      await SecureStore.setItemAsync("pending_otp", receivedOtp);
+      setSecondsLeft(RESEND_SECONDS);
+    } catch (err: any) {
+      console.error("Failed to resend OTP:", err);
+      setError("Failed to resend OTP. Please try again.");
+    }
   };
 
   return (

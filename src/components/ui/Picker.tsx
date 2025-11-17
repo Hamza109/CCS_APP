@@ -1,11 +1,7 @@
-import {
-  BottomSheetBackdrop,
-  BottomSheetModal,
-  BottomSheetView,
-} from "@gorhom/bottom-sheet";
-import { Picker } from "@react-native-picker/picker";
+import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import React, { useMemo, useRef, useState } from "react";
-import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import { Platform, StyleSheet, Text, View } from "react-native";
+import { Dropdown } from "react-native-element-dropdown";
 
 export interface PickerOption {
   id: string;
@@ -51,81 +47,37 @@ const CustomPicker: React.FC<CustomPickerProps> = ({
   return (
     <View style={[styles.container, style]}>
       <Text style={styles.label}>{label}</Text>
-      {Platform.OS === "ios" ? (
-        <>
-          <Pressable style={styles.pickerButton} onPress={showBottomSheet}>
-            <Text style={styles.pickerButtonText}>
-              {selectedOption ? selectedOption.name : placeholder}
-            </Text>
-            <Text style={styles.pickerButtonArrow}>▼</Text>
-          </Pressable>
 
-          <BottomSheetModal
-            ref={bottomSheetModalRef}
-            snapPoints={snapPoints}
-            index={0}
-            enablePanDownToClose
-            backgroundStyle={styles.bottomSheetBackground}
-            handleIndicatorStyle={styles.handleIndicator}
-            enableDynamicSizing={false}
-            backdropComponent={(props) => (
-              <BottomSheetBackdrop
-                {...props}
-                appearsOnIndex={0}
-                disappearsOnIndex={-1}
-                opacity={0.5}
-              />
-            )}
-          >
-            <BottomSheetView style={styles.bottomSheetContent}>
-              <View style={styles.bottomSheetHeader}>
-                <Text style={styles.bottomSheetTitle}>{label}</Text>
-                <Pressable style={styles.selectButton} onPress={handleSelect}>
-                  <Text style={styles.selectButtonText}>Select</Text>
-                </Pressable>
-              </View>
-
-              <View style={styles.pickerContainer}>
-                <Picker
-                  selectedValue={tempSelectedValue}
-                  onValueChange={setTempSelectedValue}
-                  style={styles.picker}
-                >
-                  {placeholder && (
-                    <Picker.Item label={placeholder} value='' enabled={true} />
-                  )}
-                  {options.map((option) => (
-                    <Picker.Item
-                      key={option.id}
-                      label={option.name}
-                      value={option.id}
-                    />
-                  ))}
-                </Picker>
-              </View>
-            </BottomSheetView>
-          </BottomSheetModal>
-        </>
-      ) : (
-        <View style={styles.pickerContainer}>
-          <Picker
-            selectedValue={selectedValue}
-            onValueChange={onValueChange}
-            style={styles.picker}
-          >
-            {placeholder && (
-              <Picker.Item label={placeholder} value='' enabled={true} />
-            )}
-            {options.map((option) => (
-              <Picker.Item
-                key={option.id}
-                label={option.name}
-                value={option.id}
-              />
-            ))}
-          </Picker>
-        </View>
-      )}
+      <Dropdown
+        style={styles.dropdown}
+        placeholderStyle={styles.placeholderStyle}
+        selectedTextStyle={styles.selectedTextStyle}
+        inputSearchStyle={styles.inputSearchStyle}
+        iconStyle={styles.iconStyle}
+        itemTextStyle={styles.itemTextStyle}
+        containerStyle={styles.dropdownContainer}
+        data={
+          options.length > 0
+            ? options.map((option) => ({
+                label: option.name,
+                value: option.id,
+              }))
+            : []
+        }
+        search
+        maxHeight={500}
+        labelField='label'
+        valueField='value'
+        placeholder={placeholder}
+        searchPlaceholder='Search...'
+        value={selectedValue && selectedValue !== "" ? selectedValue : null}
+        onChange={(item) => {
+          if (item && item.value) {
+            onValueChange(item.value);
+          }
+        }}
+        renderLeftIcon={() => null}
+      />
     </View>
   );
 };
@@ -168,6 +120,42 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   picker: {},
+  dropdown: {
+    height: 50,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    backgroundColor: "#FFFFFF",
+  },
+  placeholderStyle: {
+    fontSize: 16,
+    color: "#9CA3AF",
+  },
+  selectedTextStyle: {
+    fontSize: 16,
+    color: "#111827",
+  },
+  iconStyle: {
+    width: 20,
+    height: 20,
+  },
+  inputSearchStyle: {
+    height: 40,
+    fontSize: 16,
+
+    paddingHorizontal: 12,
+  },
+  itemTextStyle: {
+    fontSize: 16,
+    color: "#111827",
+  },
+  dropdownContainer: {
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    backgroundColor: "#FFFFFF",
+  },
   bottomSheetBackground: {
     backgroundColor: "#FFFFFF",
   },

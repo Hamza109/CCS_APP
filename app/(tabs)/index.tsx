@@ -1,8 +1,8 @@
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import { StatusBar } from "expo-status-bar";
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   Alert,
   Dimensions,
@@ -18,6 +18,7 @@ import Card from "../../src/components/ui/Card";
 import SearchBar from "../../src/components/ui/SearchBar";
 import { ROUTES } from "../../src/constants/routes";
 import { useAppDispatch, useAppSelector } from "../../src/store";
+import { triggerLocationPermissionRequest } from "../../src/store/slices/appSlice";
 import { clearToken } from "../../src/store/slices/authSlice";
 
 const { width } = Dimensions.get("window");
@@ -27,6 +28,12 @@ const HomeScreen: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const isOnline = useAppSelector((state) => state.app.isOnline);
   const dispatch = useAppDispatch();
+
+  useFocusEffect(
+    useCallback(() => {
+      dispatch(triggerLocationPermissionRequest());
+    }, [dispatch])
+  );
 
   const handleSearch = () => {
     if (searchQuery.trim()) {

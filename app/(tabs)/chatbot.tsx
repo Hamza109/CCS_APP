@@ -1,9 +1,8 @@
-import { Ionicons ,MaterialCommunityIcons} from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { marked } from "marked";
 import React, { useEffect, useRef, useState } from "react";
 import {
   Dimensions,
-  KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
@@ -12,6 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import Animated, {
   interpolate,
   useAnimatedStyle,
@@ -215,14 +215,17 @@ const ChatbotScreen: React.FC = () => {
     <SafeAreaView style={containerStyle} edges={["top"]}>
       <KeyboardAvoidingView
         style={styles.keyboardAvoidingView}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
+        behavior='padding'
       >
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerContent}>
             <View style={styles.botAvatar}>
-              <MaterialCommunityIcons name='face-agent' size={24} color='#FFFFFF' />
+              <MaterialCommunityIcons
+                name='face-agent'
+                size={24}
+                color='#FFFFFF'
+              />
             </View>
             <View style={styles.headerText}>
               <Text

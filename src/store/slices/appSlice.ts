@@ -6,6 +6,8 @@ const initialState: AppState = {
   isOnline: true,
   theme: "light",
   language: "en",
+  locationPermissionRequestToken: 0,
+  deviceInfo: undefined,
 };
 
 const appSlice = createSlice({
@@ -23,6 +25,15 @@ const appSlice = createSlice({
     },
     setLanguage: (state, action: PayloadAction<string>) => {
       state.language = action.payload;
+    },
+    triggerLocationPermissionRequest: (state) => {
+      state.locationPermissionRequestToken += 1;
+    },
+    setDeviceInfo: (
+      state,
+      action: PayloadAction<AppState["deviceInfo"] | undefined>
+    ) => {
+      state.deviceInfo = action.payload;
     },
     updateUserPreferences: (
       state,
@@ -43,6 +54,8 @@ export const {
   setOnlineStatus,
   setTheme,
   setLanguage,
+  triggerLocationPermissionRequest,
+  setDeviceInfo,
   updateUserPreferences,
 } = appSlice.actions;
 export default appSlice.reducer;

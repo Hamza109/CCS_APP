@@ -19,6 +19,16 @@ export interface AppState {
   isOnline: boolean;
   theme: "light" | "dark";
   language: string;
+  locationPermissionRequestToken: number;
+  deviceInfo?: {
+    latitude?: number;
+    longitude?: number;
+    district?: string;
+    state?: string;
+    country?: string;
+    ip_address?: string;
+    browser?: string;
+  };
 }
 
 // Legal Aid Types

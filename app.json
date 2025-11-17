@@ -8,7 +8,6 @@
     "scheme": "ccs-app",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.ccs.app",
@@ -26,10 +25,10 @@
     "android": {
       "usesCleartextTraffic": true,
       "adaptiveIcon": {
-        "backgroundColor": "#1E3A8A",
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundImage": "./assets/images/adaptive-icon.png",
-        "monochromeImage": "./assets/images/adaptive-icon.png"
+        "backgroundColor": "#FFFFFF",
+        "foregroundImage": "./assets/images/icon.png",
+        "backgroundImage": "./assets/images/icon.png",
+        "monochromeImage": "./assets/images/icon.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
@@ -83,9 +82,9 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#1E3A8A",
+          "backgroundColor": "#FFFFFF",
           "dark": {
-            "backgroundColor": "#1E3A8A"
+            "backgroundColor": "#FFFFFF"
           }
         }
       ],
@@ -98,15 +97,12 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "39af6d72-b3e4-4b40-a803-ac26d2fd5917"
+        "projectId": "71764f7c-7dcb-4f50-bdb6-223cf7b763a4"
       }
     },
-    "owner": "hamza_x49",
     "runtimeVersion": {
       "policy": "appVersion"
     },
-    "updates": {
-      "url": "https://u.expo.dev/39af6d72-b3e4-4b40-a803-ac26d2fd5917"
-    }
+    "owner": "law_1110"
   }
 }
