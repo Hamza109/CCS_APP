@@ -28,6 +28,20 @@ A comprehensive React Native Expo app built with TypeScript for a Citizen-Centri
 - **Network Status** - Real-time network monitoring
 - **Responsive Design** - Optimized for different screen sizes
 
+## 📋 Screen Inventory & Key Flows
+
+| Module                       | Screens                                                                                                                                                                                                                                                                          | Highlights                                                                                                                                                                 |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Authentication**           | **Login**, **OTP Verification**                                                                                                                                                                                                                                                  | Validates mobile number, hits `/api/otp/send`, stores the returned OTP locally, and unlocks the app only when the user enters the matching code.                           |
+| **Home & Tabs**              | **Home Dashboard**, **Chatbot**, **Search Case Hub**, **Legal Aid**, **Acts & Rules**, **Legislative Assembly**, **Find My Court**, **Document Registration**, **Marriage Registration**, **Advocates**, **Women & Children**, **Consumer Commission**, **Grievance & Feedback** | Unified hub with quick actions, offline-aware content, AI chatbot, and shortcuts into every service vertical.                                                              |
+| **Search Case – High Court** | **High Court Search**, **High Court List**, **High Court Result**                                                                                                                                                                                                                | Search by wing/case type/advanced fields, show paginated results, “View More” drill-down with parsed JSON fields, downloadable orders, and clean error/loading states.     |
+| **Search Case – CAT**        | **CAT Search**, **CAT List**, **CAT Result**                                                                                                                                                                                                                                     | Mirrors High Court UX using `/api/cat/cases/search` plus daily & final order cards, download buttons, and combined loader/error handling.                                  |
+| **Search Case – Others**     | **District Court Search**, **FCR Court Search**                                                                                                                                                                                                                                  | Dedicated forms with pickers, validator-driven input, and navigation into downstream case views.                                                                           |
+| **Case Detail Extras**       | Embedded screens such as **Daily Orders**, **Final Orders**, **Parsed Acts/Sections**                                                                                                                                                                                            | Conditional rendering, JSON parsing, and one-tap download links ensure users only see meaningful data.                                                                     |
+| **System Utilities**         | **Location Permission Gate**, **Page Hit Tracker**, **Network Status Banner**                                                                                                                                                                                                    | Requests location once from the home screen, reverse-geocodes state/district/country, logs every navigation via `/api/page-hits`, and surfaces connectivity issues inline. |
+
+> 💡 In total the app bundles **30+ routed screens**, spanning authentication, dashboard tabs, rich search flows, and every knowledge module described above.
+
 ## 🛠 Technology Stack
 
 - **Framework**: React Native with Expo (managed workflow)
@@ -459,35 +473,7 @@ The app automatically caches data for offline access:
 - Phone and tablet support
 - Google Play Store optimization
 
-### Web
-
-- Progressive Web App (PWA) support
-- Responsive design
-- Browser compatibility
-
-## 🧪 Testing
-
-### Running Tests
-
-```bash
-# Run all tests
-npm test
-
-# Run tests in watch mode
-npm run test:watch
-
-# Run tests with coverage
-npm run test:coverage
-```
-
-### Test Structure
-
-- Unit tests for utilities and hooks
-- Component tests for UI components
-- Integration tests for screens
-- E2E tests for critical user flows
-
-## 🚀 Deployment
+c## 🚀 Deployment
 
 ### Development Build
 
@@ -560,43 +546,6 @@ expo build:ios --type archive
 - Prettier for code formatting
 - Conventional commits
 
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🆘 Support
-
-### Documentation
-
-- API documentation
-- Component documentation
-- Deployment guides
-- Troubleshooting
-
-### Contact
-
-- Email: support@ccs.gov.in
-- Website: https://ccs.gov.in
-- Documentation: https://docs.ccs.gov.in
-
 ## 🔄 Version History
 
 ### v1.0.0 (Current)
-
-- Initial release
-- Core features implementation
-- Offline support
-- Deep linking
-- Theme support
-
-### Future Releases
-
-- Enhanced AI chatbot
-- Video streaming for live proceedings
-- Advanced search and filtering
-- Push notifications
-- Multi-language support
-
----
-
-**Built with ❤️ for Citizen-Centric Services**

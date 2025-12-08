@@ -1,11 +1,11 @@
 import { router, useLocalSearchParams } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Button from "../../src/components/ui/Button";
 import Input from "../../src/components/ui/Input";
-import { otpApi } from "../../src/services/otpApi";
+import { useSendOtp, useVerifyOtp } from "../../src/hooks/useOtp";
 import { useAppDispatch } from "../../src/store";
 import { setToken } from "../../src/store/slices/authSlice";
 
@@ -18,6 +18,8 @@ const OTPScreen: React.FC = () => {
   const [secondsLeft, setSecondsLeft] = useState(RESEND_SECONDS);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const dispatch = useAppDispatch();
+  const verifyOtpMutation = useVerifyOtp();
+  const sendOtpMutation = useSendOtp();
 
   useEffect(() => {
     timerRef.current && clearInterval(timerRef.current);
@@ -40,37 +42,43 @@ const OTPScreen: React.FC = () => {
       setError("Enter the 6-digit OTP sent to your phone");
       return;
     }
+
+    if (!phone) {
+      setError("Phone number not found");
+      return;
+    }
+
     setError(undefined);
 
     try {
-      // Get stored OTP from local storage
-      const storedOtp = await SecureStore.getItemAsync("pending_otp");
-      const storedPhone = await SecureStore.getItemAsync("pending_phone");
+      // Format phone number with country code (91 for India)
+      const mobileNumber = `91${phone}`;
 
-      if (!storedOtp) {
-        setError("OTP expired. Please request a new one.");
-        return;
+      // Call API to verify OTP using tanstack query mutation
+      const response = await verifyOtpMutation.mutateAsync({
+        mobile_number: mobileNumber,
+        otp: otp,
+      });
+
+      console.log("OTP verification response:", response.access_token);
+
+      // Get token from API response
+      const token = response.access_token;
+      if (!token) {
+        throw new Error("Token not received from server");
       }
 
-      // Verify entered OTP against stored OTP
-      if (otp !== storedOtp) {
-        setError("Invalid OTP. Please try again.");
-        return;
-      }
-
-      // OTP verified successfully - grant access
-      const token = `token_${storedPhone}_${Date.now()}`;
+      // Store token in Redux and SecureStore
       dispatch(setToken(token));
       await SecureStore.setItemAsync("auth_token", token);
 
-      // Clean up stored OTP
-      await SecureStore.deleteItemAsync("pending_otp");
-      await SecureStore.deleteItemAsync("pending_phone");
-
+      // Navigate to main app
       router.replace("/(tabs)");
     } catch (err: any) {
       console.error("OTP verification error:", err);
-      setError("Verification failed. Please try again.");
+      setError(
+        err?.response?.data?.message || "Invalid OTP. Please try again."
+      );
     }
   };
 
@@ -85,17 +93,15 @@ const OTPScreen: React.FC = () => {
     try {
       setError(undefined);
       const mobileNumber = `91${phone}`;
-      const response = await otpApi.send({
+
+      // Call API to resend OTP using tanstack query mutation
+      const response = await sendOtpMutation.mutateAsync({
         mobile_number: mobileNumber,
       });
 
-      const receivedOtp = response.otp;
-      if (!receivedOtp) {
-        throw new Error("OTP not received from server");
-      }
+      console.log("Resend OTP response:", response);
 
-      // Save new OTP locally
-      await SecureStore.setItemAsync("pending_otp", receivedOtp);
+      // Reset timer
       setSecondsLeft(RESEND_SECONDS);
     } catch (err: any) {
       console.error("Failed to resend OTP:", err);
@@ -131,16 +137,32 @@ const OTPScreen: React.FC = () => {
             required
           />
 
-          <Button title='Verify' onPress={handleVerify} fullWidth />
+          <Button
+            title={verifyOtpMutation.isPending ? "Verifying..." : "Verify"}
+            onPress={handleVerify}
+            fullWidth
+            disabled={verifyOtpMutation.isPending}
+          />
+          {verifyOtpMutation.isPending && (
+            <View style={styles.loaderContainer}>
+              <ActivityIndicator size='small' color='#1E3A8A' />
+            </View>
+          )}
 
           <View style={styles.resendRow}>
             <Text style={styles.infoText}>Didn't receive the code?</Text>
             <Button
-              title={secondsLeft > 0 ? `Resend in ${secondsLeft}s` : "Resend"}
+              title={
+                sendOtpMutation.isPending
+                  ? "Sending..."
+                  : secondsLeft > 0
+                  ? `Resend in ${secondsLeft}s`
+                  : "Resend"
+              }
               onPress={handleResend}
               variant='ghost'
               size='small'
-              disabled={secondsLeft > 0}
+              disabled={secondsLeft > 0 || sendOtpMutation.isPending}
             />
           </View>
         </View>
@@ -199,6 +221,10 @@ const styles = StyleSheet.create({
   infoText: {
     fontSize: 14,
     color: "#6C757D",
+  },
+  loaderContainer: {
+    marginTop: 12,
+    alignItems: "center",
   },
 });
 

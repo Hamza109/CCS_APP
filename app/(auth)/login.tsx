@@ -1,16 +1,15 @@
 import { router } from "expo-router";
-import * as SecureStore from "expo-secure-store";
 import React, { useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Button from "../../src/components/ui/Button";
 import Input from "../../src/components/ui/Input";
-import { otpApi } from "../../src/services/otpApi";
+import { useSendOtp } from "../../src/hooks/useOtp";
 
 const LoginScreen: React.FC = () => {
   const [phone, setPhone] = useState("");
   const [error, setError] = useState<string | undefined>(undefined);
-  const [isLoading, setIsLoading] = useState(false);
+  const sendOtpMutation = useSendOtp();
 
   const handleContinue = async () => {
     const trimmed = phone.replace(/\s+/g, "");
@@ -19,36 +18,26 @@ const LoginScreen: React.FC = () => {
       return;
     }
     setError(undefined);
-    setIsLoading(true);
 
     try {
-      // Format phone number with country code (91 for India)
+      // Format phone number with country code and + prefix (91 for India)
       const mobileNumber = `91${trimmed}`;
 
-      // Call API to send OTP (API will generate and return OTP)
-      const response = await otpApi.send({
+      // Call API to send OTP using tanstack query mutation
+      const response = await sendOtpMutation.mutateAsync({
         mobile_number: mobileNumber,
       });
 
       // Get OTP from API response
-      const receivedOtp = response.otp;
-      if (!receivedOtp) {
-        throw new Error("OTP not received from server");
-      }
-
-      console.log("OTP received from API:", receivedOtp);
+      console.log(response);
 
       // Save OTP locally for verification
-      await SecureStore.setItemAsync("pending_otp", receivedOtp);
-      await SecureStore.setItemAsync("pending_phone", trimmed);
 
       // Navigate to OTP screen
       router.push({ pathname: "/otp", params: { phone: trimmed } } as any);
     } catch (err: any) {
       console.error("Failed to send OTP:", err);
       setError("Failed to send OTP. Please try again.");
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -79,12 +68,12 @@ const LoginScreen: React.FC = () => {
           />
 
           <Button
-            title={isLoading ? "Sending..." : "Continue"}
+            title={sendOtpMutation.isPending ? "Sending..." : "Continue"}
             onPress={handleContinue}
             fullWidth
-            disabled={isLoading}
+            disabled={sendOtpMutation.isPending}
           />
-          {isLoading && (
+          {sendOtpMutation.isPending && (
             <View style={styles.loaderContainer}>
               <ActivityIndicator size='small' color='#1E3A8A' />
             </View>

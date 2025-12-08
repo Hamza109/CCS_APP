@@ -1,4 +1,5 @@
 import axios from "axios";
+import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
 
 // Get the correct localhost URL based on platform
@@ -36,14 +37,15 @@ console.log("API base:", api.defaults.baseURL);
 
 // Request interceptor for authentication
 api.interceptors.request.use(
-  (config) => {
+  async (config) => {
     // Debug: log outgoing request
     try {
       const fullUrl = `${config.baseURL || ""}${config.url || ""}`;
       console.log("REQ:", fullUrl, config.method);
     } catch {}
     // Add auth token if available
-    const token = ""; // Get from secure storage
+    const token = await SecureStore.getItemAsync("auth_token");
+    console.log("token", token);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }

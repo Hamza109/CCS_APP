@@ -2,7 +2,7 @@ import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import { StatusBar } from "expo-status-bar";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Alert,
   Dimensions,
@@ -28,12 +28,18 @@ const HomeScreen: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const isOnline = useAppSelector((state) => state.app.isOnline);
   const dispatch = useAppDispatch();
+  const token = SecureStore.getItemAsync("auth_token");
 
   useFocusEffect(
+    
     useCallback(() => {
       dispatch(triggerLocationPermissionRequest());
     }, [dispatch])
   );
+  useEffect(()=>{
+
+    console.log('token',token)
+  })
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
