@@ -1,6 +1,7 @@
 import axios from "axios";
 import { ApiResponse } from "../types";
 import { LOCAL_API_URL } from "./api";
+import api from "./api";
 
 export interface ComplaintPayload {
   name: string;
@@ -25,8 +26,7 @@ export const complaintsApi = {
     payload: ComplaintPayload
   ): Promise<ApiResponse<ComplaintResponse>> => {
     try {
-      const url = `${LOCAL_API_URL}/api/complaints`;
-      const response = await axios.post(url, payload, { timeout: 20000 });
+      const response = await api.post("/api/complaints", payload, { timeout: 20000 });
       const data = response.data;
       if (!("success" in data)) {
         return { success: true, data } as ApiResponse<ComplaintResponse>;

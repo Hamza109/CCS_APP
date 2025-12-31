@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
   ScrollView,
@@ -50,12 +50,27 @@ const UnifiedContactForm: React.FC<Props> = ({
     comment: null,
   });
 
-  const { data: statesData, isLoading: isLoadingStates } = useStates();
+  const {
+    data: statesData,
+    isLoading: isLoadingStates,
+    error: statesError,
+  } = useStates();
   const [selectedStateId, setSelectedStateId] = useState<number | undefined>(
     undefined
   );
-  const { data: districtsData, isLoading: isLoadingDistricts } =
-    useDistrictsByState(selectedStateId);
+  const {
+    data: districtsData,
+    isLoading: isLoadingDistricts,
+    error: districtsError,
+  } = useDistrictsByState(selectedStateId);
+
+  // Debug logging
+  useEffect(() => {
+    console.log("📋 States Data:", statesData);
+    console.log("📋 States Loading:", isLoadingStates);
+    console.log("📋 States Error:", statesError);
+    console.log("📋 States Count:", statesData?.length || 0);
+  }, [statesData, isLoadingStates, statesError]);
 
   const handleChange = (key: keyof UnifiedContactPayload, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -132,17 +147,32 @@ const UnifiedContactForm: React.FC<Props> = ({
             name: s.name,
           }))}
           onValueChange={(value) => {
+            console.log("📍 State selected:", value);
             const numeric = parseInt(value, 10);
             setSelectedStateId(numeric);
             const sel = (statesData || []).find((s) => s.id === numeric);
+            console.log("📍 Selected state:", sel);
             setForm((prev) => ({
               ...prev,
               present_state: sel?.name || "",
               present_district: "",
             }));
           }}
-          placeholder={isLoadingStates ? "Loading states..." : "Select a state"}
+          placeholder={
+            isLoadingStates
+              ? "Loading states..."
+              : statesError
+              ? "Error loading states"
+              : (statesData || []).length === 0
+              ? "No states available"
+              : "Select a state"
+          }
         />
+        {statesError && (
+          <Text style={styles.errorText}>
+            Failed to load states. Please try again.
+          </Text>
+        )}
       </View>
 
       <View style={styles.inputGroup}>
@@ -233,6 +263,11 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontSize: 16,
     textAlign: "center",
+  },
+  errorText: {
+    color: "#EF4444",
+    fontSize: 12,
+    marginTop: 4,
   },
 });
 

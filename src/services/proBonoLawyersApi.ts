@@ -28,8 +28,6 @@ export const proBonoLawyersApi = {
         params: district ? { district } : {},
       });
 
-      console.log("Pro-Bono Lawyers API Response:", response.data);
-
       // Normalize plain array responses to ApiResponse shape
       const payload = response.data;
       if (Array.isArray(payload)) {

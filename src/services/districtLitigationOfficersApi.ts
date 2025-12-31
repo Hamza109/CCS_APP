@@ -1,6 +1,6 @@
 import axios from "axios";
 import { ApiResponse } from "../types";
-import { LOCAL_API_URL } from "./api";
+import api, { LOCAL_API_URL } from "./api";
 
 // District Litigation Officers API Types
 export interface DistrictLitigationOfficer {
@@ -27,7 +27,7 @@ export const districtLitigationOfficersApi = {
       console.log("Fetching district litigation officers from:", url);
       console.log("District filter:", district);
 
-      const response = await axios.get(url, {
+      const response = await api.get(url, {
         params: district ? { district } : {},
         timeout: 15000,
       });
@@ -99,7 +99,7 @@ export const districtLitigationOfficersApi = {
       const url = `${LOCAL_API_URL}/api/district-litigation-officers/districts`;
       console.log("Fetching district litigation officer districts from:", url);
 
-      const response = await axios.get(url, {
+      const response = await api.get(url, {
         timeout: 15000,
       });
 

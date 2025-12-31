@@ -1,6 +1,6 @@
 import axios from "axios";
 import { ApiResponse } from "../types";
-import { LOCAL_API_URL } from "./api";
+import api from "./api";
 
 export interface LawDeptContactPayload {
   name: string;
@@ -25,8 +25,9 @@ export const lawDeptContactApi = {
     payload: LawDeptContactPayload
   ): Promise<ApiResponse<LawDeptContactResponse>> => {
     try {
-      const url = `${LOCAL_API_URL}/api/contacts`;
-      const response = await axios.post(url, payload, { timeout: 20000 });
+      const response = await api.post("/api/contacts", payload, {
+        timeout: 20000,
+      });
       const data = response.data;
       // Normalize single-object responses
       if (!("success" in data)) {

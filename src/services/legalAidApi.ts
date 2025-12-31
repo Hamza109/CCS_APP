@@ -31,8 +31,7 @@ export const legalAidApi = {
         params: district ? { district } : {},
       });
 
-      console.log("API Response:", response.data);
-      console.log("Response status:", response.status);
+
       return response.data;
     } catch (error) {
       console.error("API Error:", error);

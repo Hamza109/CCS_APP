@@ -1,6 +1,6 @@
 import axios from "axios";
 import { ApiResponse } from "../types";
-import { LOCAL_API_URL } from "./api";
+import api, { LOCAL_API_URL } from "./api";
 
 // Para Legal Volunteers API Types
 export interface ParaLegalVolunteer {
@@ -27,7 +27,7 @@ export const paraLegalVolunteersApi = {
       console.log("Fetching para legal volunteers from:", url);
       console.log("District filter:", district);
 
-      const response = await axios.get(url, {
+      const response = await api.get(url, {
         params: district ? { district } : {},
         timeout: 15000,
       });
@@ -99,7 +99,7 @@ export const paraLegalVolunteersApi = {
       const url = `${LOCAL_API_URL}/api/para-legal-volunteers/districts`;
       console.log("Fetching para legal volunteer districts from:", url);
 
-      const response = await axios.get(url, {
+      const response = await api.get(url, {
         timeout: 15000,
       });
 
