@@ -64,6 +64,7 @@ const OTPScreen: React.FC = () => {
 
       // Get token from API response
       const token = response.access_token;
+      console.log('response token',token)
       if (!token) {
         throw new Error("Token not received from server");
       }

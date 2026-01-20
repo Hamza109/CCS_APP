@@ -1,6 +1,7 @@
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
+import { decryptApiPayload } from "../utils/decryption";
 import { encryptPayload } from "../utils/encryption";
 
 // Get the correct localhost URL based on platform
@@ -82,7 +83,22 @@ api.interceptors.request.use(
           } else {
             console.log("✅ Payload encrypted for POST request:", endpoint);
           }
-          console.log("📤 Sending encrypted payload to:", endpoint);
+          
+          // Log final payload being sent
+          console.log("📤 Final payload being sent:", JSON.stringify(config.data, null, 2));
+          console.log("📤 Encrypted string format check:", {
+            hasEncrypted: !!config.data.encrypted,
+            encryptedType: typeof config.data.encrypted,
+            encryptedLength: config.data.encrypted?.length,
+            hasColon: config.data.encrypted?.includes(':'),
+            firstPart: config.data.encrypted?.split(':')[0]?.substring(0, 20),
+          });
+          console.log("📤 Request headers:", {
+            "Content-Type": config.headers["Content-Type"],
+            "X-Encrypted": config.headers["X-Encrypted"],
+            "Authorization": config.headers["Authorization"] ? "Present" : "Not present",
+          });
+          console.log("📤 Full URL:", `${config.baseURL || ""}${config.url || ""}`);
         } catch (error: any) {
           console.error("❌ Failed to encrypt payload:", {
             endpoint: config.url,
@@ -101,9 +117,32 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor for error handling
+// Response interceptor for decryption + error handling
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    try {
+      const endpoint = response.config?.url || "";
+      const payload = response.data;
+
+      // Skip decryption for district endpoints (these return plain arrays)
+      const isDistrictEndpoint =
+        endpoint.includes("/districts") ||
+        endpoint.includes("districts-by-state");
+      console.log("🔒 Encrypted response detected from:", endpoint);
+      console.log(
+        "🔒 Encrypted payload preview:",
+        JSON.stringify(payload).substring(0, 200)
+      );
+
+      // Attempt to decrypt if payload has iv + data and endpoint is not a district endpoint
+      if (!isDistrictEndpoint && payload && payload.iv && payload.data) {
+        response.data = decryptApiPayload(payload);
+      }
+    } catch (err) {
+      console.warn("⚠️ Response decryption skipped due to error:", err);
+    }
+    return response;
+  },
   (error) => {
     try {
       const status = error?.response?.status;
