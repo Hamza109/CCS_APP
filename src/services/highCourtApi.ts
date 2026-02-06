@@ -7,37 +7,54 @@ const IV = "sHtqzV8DP88en0jc";
 const HMAC_KEY = "15081947";
 const DEPT_ID = "achalsethi1972%40ecourts.gov.in";
 
+/* ===================== CRYPTO ===================== */
+
 function aesEncryptBase64(plain: string): string {
   const key = CryptoJS.enc.Utf8.parse(AUTHENTICATION_KEY);
   const iv = CryptoJS.enc.Utf8.parse(IV);
-  const encrypted = CryptoJS.AES.encrypt(CryptoJS.enc.Utf8.parse(plain), key, {
-    iv,
-    mode: CryptoJS.mode.CBC,
-    padding: CryptoJS.pad.Pkcs7,
-  });
-  // CryptoJS returns base64 by default
-  return encrypted.toString();
+
+  const encrypted = CryptoJS.AES.encrypt(
+    CryptoJS.enc.Utf8.parse(plain),
+    key,
+    {
+      iv,
+      mode: CryptoJS.mode.CBC,
+      padding: CryptoJS.pad.Pkcs7,
+    }
+  );
+
+  return encrypted.toString(); // Base64
 }
 
 function aesDecryptBase64ToJson<T = any>(b64Cipher: string): T {
   const key = CryptoJS.enc.Utf8.parse(AUTHENTICATION_KEY);
   const iv = CryptoJS.enc.Utf8.parse(IV);
+
   const decrypted = CryptoJS.AES.decrypt(b64Cipher, key, {
     iv,
     mode: CryptoJS.mode.CBC,
     padding: CryptoJS.pad.Pkcs7,
   });
-  const text = decrypted.toString(CryptoJS.enc.Utf8);
-  return JSON.parse(text) as T;
+
+  return JSON.parse(
+    decrypted.toString(CryptoJS.enc.Utf8)
+  ) as T;
 }
 
 function hmacSha256Hex(message: string): string {
-  return CryptoJS.HmacSHA256(message, HMAC_KEY).toString(CryptoJS.enc.Hex);
+  return CryptoJS.HmacSHA256(message, HMAC_KEY).toString(
+    CryptoJS.enc.Hex
+  );
 }
 
+/* ===================== AUTH ===================== */
+
 async function getAccessToken(): Promise<string> {
-  const url = "https://delhigw.napix.gov.in/nic/ecourts/oauth2/token";
+  const url =
+    "https://delhigw.napix.gov.in/nic/ecourts/oauth2/token";
+
   const body = "scope=napix&grant_type=client_credentials";
+
   const res = await axios.post(url, body, {
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
@@ -46,30 +63,55 @@ async function getAccessToken(): Promise<string> {
     },
     timeout: 8000,
   });
-  return res.data?.access_token as string;
+
+  return res.data.access_token;
 }
 
+/* ===================== TYPES ===================== */
+
 export type HighCourtSearchParams = {
-  est_code: string; // JKHC01 or JKHC02
-  case_type: string; // e.g. "72"
-  reg_year: string; // e.g. "2024"
-  reg_no: string; // e.g. "123"
+  est_code: string;
+  case_type: string;
+  reg_year: string;
+  reg_no: string;
 };
 
 export type HighCourtCnrParams = {
-  cino: string; // CNR (Case Number Registry) Number
+  cino: string;
 };
+
+/** Act API params (USED for your requirement) */
+export type ActParams = {
+  est_code: string;
+  case_type: string;
+  reg_year: string;
+  pend_disp: string;
+  national_act_code: string;
+};
+
+/* ===================== SEARCH HELPERS ===================== */
+
+function buildSearchInputStr(params: HighCourtSearchParams): string {
+  return `est_code='${params.est_code}'|case_type='${params.case_type}'|reg_year='${params.reg_year}'|reg_no='${params.reg_no}'`;
+}
+
+/* ===================== CASE SEARCH ===================== */
 
 async function callSearchApi(
   accessToken: string,
   params: HighCourtSearchParams
 ) {
-  const inputStr = `est_code='${params.est_code}'|case_type='${params.case_type}'|reg_year='${params.reg_year}'|reg_no='${params.reg_no}'`;
+  const inputStr = buildSearchInputStr(params);
   const request_token = hmacSha256Hex(inputStr);
   const request_str = aesEncryptBase64(inputStr);
-  const url = `https://delhigw.napix.gov.in/nic/ecourts/hc-case-search-api?dept_id=${DEPT_ID}&request_str=${encodeURIComponent(
-    request_str
-  )}&request_token=${encodeURIComponent(request_token)}&version=v1.0`;
+
+  const url =
+    `https://delhigw.napix.gov.in/nic/ecourts/hc-case-search-api` +
+    `?dept_id=${DEPT_ID}` +
+    `&request_str=${encodeURIComponent(request_str)}` +
+    `&request_token=${encodeURIComponent(request_token)}` +
+    `&version=v1.0`;
+
   const res = await axios.get(url, {
     headers: {
       Accept: "application/json",
@@ -77,17 +119,24 @@ async function callSearchApi(
     },
     timeout: 8000,
   });
-  const b64 = res.data?.response_str as string;
-  return aesDecryptBase64ToJson<any>(b64);
+
+  return aesDecryptBase64ToJson<any>(res.data.response_str);
 }
+
+/* ===================== CNR API ===================== */
 
 async function callCnrApi(accessToken: string, cino: string) {
   const inputStr = `cino='${cino}'`;
   const request_token = hmacSha256Hex(inputStr);
   const request_str = aesEncryptBase64(inputStr);
-  const url = `https://delhigw.napix.gov.in/nic/ecourts/hc-cnr-api?dept_id=${DEPT_ID}&request_str=${encodeURIComponent(
-    request_str
-  )}&request_token=${encodeURIComponent(request_token)}&version=v1.0`;
+
+  const url =
+    `https://delhigw.napix.gov.in/nic/ecourts/hc-cnr-api` +
+    `?dept_id=${DEPT_ID}` +
+    `&request_str=${encodeURIComponent(request_str)}` +
+    `&request_token=${encodeURIComponent(request_token)}` +
+    `&version=v1.0`;
+
   const res = await axios.get(url, {
     headers: {
       Accept: "application/json",
@@ -95,70 +144,78 @@ async function callCnrApi(accessToken: string, cino: string) {
     },
     timeout: 8000,
   });
-  const b64 = res.data?.response_str as string;
-  return aesDecryptBase64ToJson<any>(b64);
+
+  return aesDecryptBase64ToJson<any>(res.data.response_str);
 }
+
+/* ===================== ACT API (ONLY ONE USED) ===================== */
+
+const ACT_BASE_URL =
+  "https://delhigw.napix.gov.in/nic/ecourts/dc-act-api/act";
+
+function buildActInputStr(params: ActParams): string {
+  return (
+    `est_code='${params.est_code}'|` +
+    `case_type='${params.case_type}'|` +
+    `reg_year='${params.reg_year}'|` +
+    `pend_disp='${params.pend_disp}'|` +
+    `national_act_code='${params.national_act_code}'`
+  );
+}
+
+async function callActApi(
+  accessToken: string,
+  params: ActParams
+) {
+  const inputStr = buildActInputStr(params);
+  const request_token = hmacSha256Hex(inputStr);
+  const request_str = aesEncryptBase64(inputStr);
+
+  const url =
+    `${ACT_BASE_URL}?dept_id=${DEPT_ID}` +
+    `&request_str=${encodeURIComponent(request_str)}` +
+    `&request_token=${encodeURIComponent(request_token)}` +
+    `&version=v1.0`;
+
+  const res = await axios.get(url, {
+    headers: {
+      Accept: "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    timeout: 15000,
+  });
+
+  return aesDecryptBase64ToJson<any>(res.data.response_str);
+}
+
+/* ===================== EXPORT ===================== */
 
 export const highCourtApi = {
   async getCaseDetails(params: HighCourtSearchParams) {
     const token = await getAccessToken();
     const search = await callSearchApi(token, params);
-    // Expecting search.casenos map; pick first cino
+
     const casenos = search?.casenos;
-    const first = casenos ? (Object.values(casenos)[0] as any) : null;
-    const cino = first?.cino as string | undefined;
+    const first = casenos ? Object.values(casenos)[0] as any : null;
+    const cino = first?.cino;
+
     if (!cino) {
       return { search, detail: null };
     }
+
     const detail = await callCnrApi(token, cino);
     return { search, detail };
   },
+
   async getCnrDetails(params: HighCourtCnrParams) {
     const token = await getAccessToken();
-    const inputStr = `cino='${params.cino}'`;
-    const request_token = hmacSha256Hex(inputStr);
-    const request_str = aesEncryptBase64(inputStr);
-    const url = `https://delhigw.napix.gov.in/nic/ecourts/dc-cnr-api/cnr?dept_id=${DEPT_ID}&request_str=${encodeURIComponent(
-      request_str
-    )}&request_token=${encodeURIComponent(request_token)}&version=v1.0`;
-    const res = await axios.get(url, {
-      headers: {
-        Accept: "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      timeout: 8000,
-    });
-
-    const b64 = res.data?.response_str as string;
- 
-    return aesDecryptBase64ToJson<any>(b64);
+    return callCnrApi(token, params.cino);
   },
-  async getOrderDownloadUrl(
-    cino: string,
-    order_no: string,
-    order_date: string
-  ) {
+
+  /** ✅ Act API (used with your params) */
+  async getAct(params: ActParams) {
     const token = await getAccessToken();
-    const inputStr = `cino='${cino}'|order_no='${order_no}'|order_date='${order_date}'`;
-    const request_token = hmacSha256Hex(inputStr);
-    const request_str = aesEncryptBase64(inputStr);
-    const url =
-      `https://delhigw.napix.gov.in/nic/ecourts/hc-order-api/order?dept_id=${DEPT_ID}` +
-      `&request_str=${encodeURIComponent(request_str)}` +
-      `&request_token=${encodeURIComponent(request_token)}` +
-      `&version=v1.0`;
-    const res = await axios.get(url, {
-      headers: {
-        Accept: "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      timeout: 10000,
-    });
-
-    const b64 = res.data?.response_str as string;
-
-    const decryptedBase64: string = aesDecryptBase64ToJson<string>(b64);
-    return { pdfBase64: decryptedBase64 };
+    return callActApi(token, params);
   },
 };
 
