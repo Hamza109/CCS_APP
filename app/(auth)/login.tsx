@@ -20,7 +20,7 @@ const LoginScreen: React.FC = () => {
     setError(undefined);
 
     try {
-      // Format phone number with country code and + prefix (91 for India)
+      // Format phone number with country code (91 for India)
       const mobileNumber = `91${trimmed}`;
 
       // Call API to send OTP using tanstack query mutation
@@ -44,7 +44,7 @@ const LoginScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <View style={styles.blueHeader}>
-        <Text style={styles.headerTitle}>Citizen-centric Services</Text>
+        <Text style={styles.headerTitle}>e-Nyaya Sarathi</Text>
       </View>
 
       <View style={styles.mainContent}>

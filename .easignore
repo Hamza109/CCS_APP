@@ -18,7 +18,7 @@ expo-env.d.ts
 *.key
 *.mobileprovision
 
-enyaya-sarathi.json
+
 # Metro
 .metro-health-check*
 

@@ -1,6 +1,6 @@
 import axios from "axios";
 import { ApiResponse } from "../types";
-import { LOCAL_API_URL } from "./api";
+
 import api from "./api";
 
 export interface ComplaintPayload {

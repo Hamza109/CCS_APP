@@ -220,7 +220,7 @@ const HomeScreen: React.FC = () => {
       )}
       <View style={styles.blueHeader}>
         <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>Citizen-centric Services</Text>
+          <Text style={styles.headerTitle}>e-Nyaya Sarathi</Text>
           <Pressable
             style={({ pressed }) => [
               styles.logoutButton,

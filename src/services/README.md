@@ -1,6 +1,6 @@
 # Services Directory
 
-This directory contains all API service modules for the CCS (Citizen Centric Services) application.
+This directory contains all API service modules for the CCS (e-Nyaya Sarathi) application.
 
 ## Structure
 

@@ -1,33 +1,19 @@
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
-import { Platform } from "react-native";
 import { decryptApiPayload } from "../utils/decryption";
 import { encryptPayload } from "../utils/encryption";
 
 // Get the correct localhost URL based on platform
-export const getLocalApiUrl = () => {
-  if (Platform.OS === "android") {
-    // Android emulator uses 10.0.2.2 to access host machine's localhost
-    return "https://jayna-cynical-uninimically.ngrok-free.dev";
-  } else if (Platform.OS === "ios") {
-    // iOS simulator can use localhost
-    return "http://127.0.0.1:8000";
-  } else {
-    // Web or other platforms
-    return "http://192.168.1.4:8000";
-  }
-};
-
 // For physical devices, uncomment and use your computer's IP address:
 // export const getLocalApiUrl = () => "http://192.168.1.100:8000";
 
-export const LOCAL_API_URL = getLocalApiUrl();
+
 
 // Base API configuration
-const API_BASE_URL = "https://api.ccs.gov.in"; // Replace with actual API URL
+const API_BASE_URL = "https://enyayasarathi.jk.gov.in/enyayasarathi"; // Replace with actual API URL
 
 const api = axios.create({
-  baseURL: LOCAL_API_URL,
+  baseURL: API_BASE_URL,
   timeout: 60000,
   headers: {
     "Content-Type": "application/json",
@@ -83,22 +69,30 @@ api.interceptors.request.use(
           } else {
             console.log("✅ Payload encrypted for POST request:", endpoint);
           }
-          
+
           // Log final payload being sent
-          console.log("📤 Final payload being sent:", JSON.stringify(config.data, null, 2));
+          console.log(
+            "📤 Final payload being sent:",
+            JSON.stringify(config.data, null, 2)
+          );
           console.log("📤 Encrypted string format check:", {
             hasEncrypted: !!config.data.encrypted,
             encryptedType: typeof config.data.encrypted,
             encryptedLength: config.data.encrypted?.length,
-            hasColon: config.data.encrypted?.includes(':'),
-            firstPart: config.data.encrypted?.split(':')[0]?.substring(0, 20),
+            hasColon: config.data.encrypted?.includes(":"),
+            firstPart: config.data.encrypted?.split(":")[0]?.substring(0, 20),
           });
           console.log("📤 Request headers:", {
             "Content-Type": config.headers["Content-Type"],
             "X-Encrypted": config.headers["X-Encrypted"],
-            "Authorization": config.headers["Authorization"] ? "Present" : "Not present",
+            Authorization: config.headers["Authorization"]
+              ? "Present"
+              : "Not present",
           });
-          console.log("📤 Full URL:", `${config.baseURL || ""}${config.url || ""}`);
+          console.log(
+            "📤 Full URL:",
+            `${config.baseURL || ""}${config.url || ""}`
+          );
         } catch (error: any) {
           console.error("❌ Failed to encrypt payload:", {
             endpoint: config.url,

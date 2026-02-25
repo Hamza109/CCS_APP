@@ -1,0 +1,12 @@
+[
+    {
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "in.gov.jk.enyayasarathi",
+        "sha256_cert_fingerprints": [
+          "4D:5D:E3:D8:2B:26:4F:1A:2A:9B:28:80:45:28:95:47:A9:42:D4:0E:E8:1B:71:E7:B2:22:96:B4:1A:4B:A0:F4"
+        ]
+      }
+    }
+  ]

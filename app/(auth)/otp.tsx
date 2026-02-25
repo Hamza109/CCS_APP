@@ -113,7 +113,7 @@ const OTPScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <View style={styles.blueHeader}>
-        <Text style={styles.headerTitle}>Citizen-centric Services</Text>
+        <Text style={styles.headerTitle}>e-Nyaya Sarathi</Text>
       </View>
 
       <View style={styles.mainContent}>
