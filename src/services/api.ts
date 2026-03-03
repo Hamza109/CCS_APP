@@ -1,5 +1,9 @@
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
+import { Alert } from "react-native";
+import { router } from "expo-router";
+import { store } from "../store";
+import { clearToken } from "../store/slices/authSlice";
 import { decryptApiPayload } from "../utils/decryption";
 import { encryptPayload } from "../utils/encryption";
 
@@ -10,7 +14,7 @@ import { encryptPayload } from "../utils/encryption";
 
 
 // Base API configuration
-const API_BASE_URL = "https://enyayasarathi.jk.gov.in/enyayasarathi"; // Replace with actual API URL
+export const API_BASE_URL = "https://enyayasarathi.jk.gov.in/enyayasarathi"; // Replace with actual API URL
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -19,6 +23,9 @@ const api = axios.create({
     "Content-Type": "application/json",
   },
 });
+
+// Prevent multiple simultaneous session-timeout alerts when many requests get 403
+let isSessionTimeoutAlertVisible = false;
 
 // Log base URL once at startup for debugging preview builds
 console.log("API base:", api.defaults.baseURL);
@@ -140,8 +147,56 @@ api.interceptors.response.use(
   (error) => {
     try {
       const status = error?.response?.status;
-      const url = error?.config?.url;
+      const url = error?.config?.url as string | undefined;
+      const hasAuthHeader = !!error?.config?.headers?.Authorization;
       console.log("ERR:", error?.message, status, url);
+
+      // Global session timeout handling:
+      // - Trigger only for authenticated requests (with Authorization header)
+      // - Ignore page hits endpoint
+      // - Show alert only once even if multiple requests fail with 403
+      if (
+        status === 401 &&
+        hasAuthHeader &&
+        url &&
+        !url.includes("/api/page-hits") &&
+        !isSessionTimeoutAlertVisible
+      ) {
+        isSessionTimeoutAlertVisible = true;
+
+        Alert.alert(
+          "Session Timeout",
+          "Your session has expired. Please log in again.",
+          [
+            {
+              text: "Login",
+              onPress: async () => {
+                try {
+                  await SecureStore.deleteItemAsync("auth_token");
+                } catch (tokenError) {
+                  console.log("Error clearing token on session timeout:", tokenError);
+                }
+
+                // Clear Redux auth state
+                store.dispatch(clearToken());
+
+                // Navigate to login screen
+                try {
+                  router.replace("/(auth)/login");
+                } catch (navError) {
+                  console.log("Error navigating to login after session timeout:", navError);
+                } finally {
+                  // Allow future session-timeout alerts after handling this one
+                  isSessionTimeoutAlertVisible = false;
+                }
+              },
+            },
+          ],
+          {
+            cancelable: false,
+          }
+        );
+      }
     } catch {}
     return Promise.reject(error);
   }

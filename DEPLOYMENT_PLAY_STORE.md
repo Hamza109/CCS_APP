@@ -25,7 +25,7 @@ Before building for production, ensure:
 | **Version**           | Set correct `version` in `app.json` (e.g. `"1.0.0"`). Play Store uses this for display.                      |
 | **Runtime version**   | Your app uses `runtimeVersion: { "policy": "appVersion" }` — OTA updates will use app version.               |
 | **Secrets / env**     | Remove dev API URLs, keys, or debug flags. Use EAS Secrets for env vars in builds.                           |
-| **Proguard / minify** | EAS production builds minify by default. No extra config needed.                                             |
+| **Proguard / minify** | R8 code shrinking and resource shrinking enabled via `expo-build-properties` in app.json. Reduces AAB size.  |
 | **Signing**           | EAS manages signing. First build will prompt to create credentials (or use existing).                        |
 | **Icons & splash**    | Confirm `./assets/images/icon.png` and splash exist and look correct.                                        |
 | **Test**              | Run a production-like build locally: `eas build --profile production --platform android --local` (optional). |
@@ -152,6 +152,27 @@ For first-time submission you will need to set up **Google Play credentials** in
 4. **Create new release** → upload the AAB.
 5. Add **Release name** (e.g. `1.0.0 (1)`) and **Release notes**.
 6. **Review and roll out**.
+
+---
+
+## 6.1 R8/ProGuard deobfuscation file (mapping.txt)
+
+Play Console may show: *"There is no deobfuscation file associated with this App Bundle"* when you use R8 obfuscation. The mapping file lets Play Console translate obfuscated crash stack traces into readable form for debugging.
+
+**EAS Build:** The R8 mapping file is not currently available as a build artifact from EAS cloud builds (the `mapping` output folder is not generated in the Expo/React Native build structure). With newer Android Gradle Plugin versions, the mapping file may be included automatically inside the AAB—if you still see the Play Console warning after uploading, you can:
+
+1. **Build locally** to obtain the mapping file:
+   ```bash
+   npx expo prebuild --platform android --clean
+   eas build --platform android --profile production --local
+   ```
+   After the build, look for `android/app/build/outputs/mapping/release/mapping.txt` or `android/app/build/outputs/bundle/release/mapping.txt`.
+
+2. **Upload to Play Console** (if you have the file):
+   - **Test and release** → **App bundle explorer** → select the AAB version.
+   - **Downloads** tab → **Assets** → upload the mapping file.
+
+**Note:** Each build produces a new mapping file. It must match the exact AAB version. You can ignore the warning if crash debugging is not critical; crashes will still be reported but with obfuscated stack traces.
 
 ---
 

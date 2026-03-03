@@ -217,6 +217,23 @@ export const highCourtApi = {
     const token = await getAccessToken();
     return callActApi(token, params);
   },
+
+  /**
+   * Download order PDF for a given case/order.
+   * NOTE: Backend download integration is not wired yet, so this
+   * returns an empty payload to keep the UI and types happy.
+   */
+  async getOrderDownloadUrl(
+    _cino: string,
+    _orderNo: string,
+    _orderDate: string
+  ): Promise<{ pdfBase64: string | null }> {
+    console.warn(
+      "highCourtApi.getOrderDownloadUrl is not yet implemented on the backend.",
+      { _cino, _orderNo, _orderDate }
+    );
+    return { pdfBase64: null };
+  },
 };
 
 export default highCourtApi;

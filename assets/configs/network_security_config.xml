@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Allow cleartext (HTTP) and trust user certs for API domains -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">enyayasarathi.jk.gov.in</domain>
+        <domain includeSubdomains="true">164.100.223.109</domain>
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </domain-config>
+</network-security-config>

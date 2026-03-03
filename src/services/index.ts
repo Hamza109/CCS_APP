@@ -4,7 +4,7 @@
  */
 
 // Main API instance and configuration
-export { default as api, getLocalApiUrl, LOCAL_API_URL } from "./api";
+export { default as api, API_BASE_URL } from "./api";
 
 // Legal Aid API
 export { legalAidApi, type LegalAidClinic } from "./legalAidApi";

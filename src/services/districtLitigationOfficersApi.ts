@@ -1,6 +1,6 @@
 import axios from "axios";
 import { ApiResponse } from "../types";
-import api, { LOCAL_API_URL } from "./api";
+import api, { API_BASE_URL } from "./api";
 
 // District Litigation Officers API Types
 export interface DistrictLitigationOfficer {
@@ -23,7 +23,7 @@ export const districtLitigationOfficersApi = {
     district?: string
   ): Promise<ApiResponse<DistrictLitigationOfficer[]>> => {
     try {
-      const url = `${LOCAL_API_URL}/api/district-litigation-officers`;
+      const url = `${API_BASE_URL}/api/district-litigation-officers`;
       console.log("Fetching district litigation officers from:", url);
       console.log("District filter:", district);
 
@@ -96,7 +96,7 @@ export const districtLitigationOfficersApi = {
    */
   getDistricts: async (): Promise<ApiResponse<string[]>> => {
     try {
-      const url = `${LOCAL_API_URL}/api/district-litigation-officers/districts`;
+      const url = `${API_BASE_URL}/api/district-litigation-officers/districts`;
       console.log("Fetching district litigation officer districts from:", url);
 
       const response = await api.get(url, {

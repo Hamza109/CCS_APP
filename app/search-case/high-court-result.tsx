@@ -551,13 +551,16 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#1E3A8A" },
   darkContainer: { backgroundColor: "#000000" },
   // Main Content with Curved Design
-  scrollView: { flex: 1, backgroundColor: "#1E3A8A" },
+  scrollView: { flex: 1, backgroundColor: "#1E3A8A" ,   overflow:"hidden"},
   mainContent: {
+
     backgroundColor: "#FFFFFF",
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingTop: 24,
     flex: 1,
+       overflow:"hidden"
+ 
   },
   content: { padding: 16 },
   card: { marginBottom: 12, padding: 12 },

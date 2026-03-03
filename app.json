@@ -39,7 +39,6 @@
       "intentFilters": [
         {
           "action": "VIEW",
-          "autoVerify": true,
           "data": [
             {
               "scheme": "https",
@@ -57,6 +56,16 @@
     },
 
     "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableMinifyInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true,
+            "extraProguardRules": "-keep class com.facebook.react.** { *; }\n-keep class com.facebook.hermes.** { *; }\n-keepattributes SourceFile,LineNumberTable\n-keepattributes *Annotation*"
+          }
+        }
+      ],
       "expo-router",
       [
         "expo-splash-screen",

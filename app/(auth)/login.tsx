@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import React, { useState } from "react";
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Image, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Button from "../../src/components/ui/Button";
 import Input from "../../src/components/ui/Input";
@@ -48,36 +48,46 @@ const LoginScreen: React.FC = () => {
       </View>
 
       <View style={styles.mainContent}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Welcome</Text>
-          <Text style={styles.subtitle}>Sign in with your phone number</Text>
+        <View style={styles.logoContainer}>
+          <Image
+            source={require("../../assets/images/icon.png")}
+            style={styles.logo}
+            resizeMode='contain'
+          />
         </View>
 
-        <View style={styles.form}>
-          <Input
-            label='Phone Number'
-            placeholder='e.g. 9876543210'
-            value={phone}
-            onChangeText={setPhone}
-            keyboardType='phone-pad'
-            autoCapitalize='none'
-            maxLength={10}
-            leftIcon='call'
-            error={error}
-            required
-          />
+        <View style={styles.content}>
+          <View style={styles.headerText}>
+            <Text style={styles.title}>Welcome</Text>
+            <Text style={styles.subtitle}>Sign in with your phone number</Text>
+          </View>
 
-          <Button
-            title={sendOtpMutation.isPending ? "Sending..." : "Continue"}
-            onPress={handleContinue}
-            fullWidth
-            disabled={sendOtpMutation.isPending}
-          />
-          {sendOtpMutation.isPending && (
-            <View style={styles.loaderContainer}>
-              <ActivityIndicator size='small' color='#1E3A8A' />
-            </View>
-          )}
+          <View style={styles.form}>
+            <Input
+              label='Phone Number'
+              placeholder='e.g. 9876543210'
+              value={phone}
+              onChangeText={setPhone}
+              keyboardType='phone-pad'
+              autoCapitalize='none'
+              maxLength={10}
+              leftIcon='call'
+              error={error}
+              required
+            />
+
+            <Button
+              title={sendOtpMutation.isPending ? "Sending..." : "Continue"}
+              onPress={handleContinue}
+              fullWidth
+              disabled={sendOtpMutation.isPending}
+            />
+            {sendOtpMutation.isPending && (
+              <View style={styles.loaderContainer}>
+                <ActivityIndicator size='small' color='#1E3A8A' />
+              </View>
+            )}
+          </View>
         </View>
       </View>
     </SafeAreaView>
@@ -99,6 +109,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "700",
     color: "#FFFFFF",
+
   },
   mainContent: {
     flex: 1,
@@ -106,10 +117,24 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
   },
-  header: {
+  logoContainer: {
+ 
+    alignItems: "center",
+  },
+  content: {
+    flex: 1,
+    justifyContent: "center",
     paddingHorizontal: 20,
-    paddingTop: 24,
-    paddingBottom: 8,
+    marginTop:-250
+  },
+  logo: {
+    width: 166,
+    height: 166,
+    borderRadius: 24,
+  },
+  headerText: {
+    alignItems: "center",
+    marginBottom: 16,
   },
   title: {
     fontSize: 24,

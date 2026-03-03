@@ -7,17 +7,14 @@ module.exports = {
     version: "1.0.0",
     orientation: "portrait",
     icon: "./assets/images/icon.png",
-    scheme: "ccs-app",
+    scheme: "enyayasarathi",
     userInterfaceStyle: "automatic",
     newArchEnabled: true,
     ios: {
       supportsTablet: true,
-      bundleIdentifier: "com.ccs.app",
+      bundleIdentifier: "in.gov.jk.enyayasarathi",
       associatedDomains: [
-        "applinks:ccs.gov.in",
-        "applinks:app.ccs.gov.in",
-        "applinks:ccs.gov.in",
-        "applinks:app.ccs.gov.in",
+        "applinks:enyayasarathi.jk.gov.in",
       ],
       statusBar: {
         style: "light",
@@ -34,7 +31,7 @@ module.exports = {
       },
       edgeToEdgeEnabled: true,
       predictiveBackGestureEnabled: false,
-      package: "com.ccs.app",
+      package: "in.gov.jk.enyayasarathi",
       statusBar: {
         style: "light",
         backgroundColor: "#1E3A8A",
@@ -46,26 +43,7 @@ module.exports = {
           data: [
             {
               scheme: "https",
-              host: "ccs.gov.in",
-            },
-            {
-              scheme: "https",
-              host: "app.ccs.gov.in",
-            },
-          ],
-          category: ["BROWSABLE", "DEFAULT"],
-        },
-        {
-          action: "VIEW",
-          autoVerify: true,
-          data: [
-            {
-              scheme: "https",
-              host: "ccs.gov.in",
-            },
-            {
-              scheme: "https",
-              host: "app.ccs.gov.in",
+              host: "enyayasarathi.jk.gov.in",
             },
           ],
           category: ["BROWSABLE", "DEFAULT"],
@@ -77,6 +55,25 @@ module.exports = {
       favicon: "./assets/images/favicon.png",
     },
     plugins: [
+      [
+        "expo-build-properties",
+        {
+          android: {
+            enableMinifyInReleaseBuilds: true,
+            enableShrinkResourcesInReleaseBuilds: true,
+            usesCleartextTraffic: true,
+            extraProguardRules:
+              "-keep class com.facebook.react.** { *; }\n-keep class com.facebook.hermes.** { *; }\n-keepattributes SourceFile,LineNumberTable\n-keepattributes *Annotation*",
+          },
+        },
+      ],
+      [
+        "expo-network-security-config",
+        {
+          networkSecurityConfig: "./assets/configs/network_security_config.xml",
+          enable: true,
+        },
+      ],
       "expo-router",
       [
         "expo-splash-screen",

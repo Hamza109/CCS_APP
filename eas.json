@@ -6,18 +6,30 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "ENCRYPTION_KEY": "9fA7KpM2XcR4WZy8LQnDHeJUTmV0aB1S"
+      }
     },
     "preview": {
       "channel": "preview",
+      "env": {
+        "ENCRYPTION_KEY": "9fA7KpM2XcR4WZy8LQnDHeJUTmV0aB1S"
+      },
       "android": {
         "buildType": "apk"
       }
     },
     "production": {
       "autoIncrement": true,
+      "env": {
+        "ENCRYPTION_KEY": "9fA7KpM2XcR4WZy8LQnDHeJUTmV0aB1S"
+      },
       "android": {
-        "buildType": "app-bundle"
+        "buildType": "app-bundle",
+        "buildArtifactPaths": [
+          "android/app/build/outputs/mapping/release/mapping.txt"
+        ]
       }
     }
   },

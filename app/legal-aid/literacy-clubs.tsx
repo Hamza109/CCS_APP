@@ -132,6 +132,7 @@ const styles = StyleSheet.create({
   mainContent: {
     flex: 1,
     backgroundColor: "#FFFFFF",
+    
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingTop: 24,

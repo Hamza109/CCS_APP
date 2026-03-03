@@ -1,6 +1,6 @@
 import axios from "axios";
 import { ApiResponse } from "../types";
-import api, { LOCAL_API_URL } from "./api";
+import api, { API_BASE_URL } from "./api";
 
 export interface Scheme {
   scheme_id: number;
@@ -13,7 +13,7 @@ export interface Scheme {
 export const schemesApi = {
   getSchemes: async (): Promise<ApiResponse<Scheme[]>> => {
     try {
-      const url = `${LOCAL_API_URL}/api/schemes`;
+      const url = `${API_BASE_URL}/api/schemes`;
       const response = await api.get(url, { timeout: 15000 });
       const payload = response.data;
       if (Array.isArray(payload)) {
