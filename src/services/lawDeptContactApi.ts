@@ -22,7 +22,7 @@ export interface LawDeptContactResponse extends LawDeptContactPayload {
 
 export const lawDeptContactApi = {
   submitContact: async (
-    payload: LawDeptContactPayload
+    payload: LawDeptContactPayload,
   ): Promise<ApiResponse<LawDeptContactResponse>> => {
     try {
       const response = await api.post("/api/contacts", payload, {

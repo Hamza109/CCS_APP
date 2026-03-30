@@ -115,6 +115,38 @@ const HighCourtResultScreen: React.FC = () => {
     }
   };
 
+  const downloadOrderPdf = async (params: {
+    cino: string;
+    orderNo: string;
+    orderDate: string;
+    downloadKey: string;
+  }) => {
+    const { cino, orderNo, orderDate, downloadKey } = params;
+    try {
+      setDownloadingOrder(downloadKey);
+      const { pdfBase64 } = await highCourtApi.getOrderDownloadUrl(
+        cino,
+        orderNo,
+        orderDate
+      );
+
+      if (!pdfBase64) return;
+      const fileUri = `${FileSystem.cacheDirectory}order_${orderNo}.pdf`;
+      await FileSystem.writeAsStringAsync(fileUri, pdfBase64, {
+        encoding: "base64",
+      });
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(fileUri);
+      } else {
+        console.log("PDF saved at:", fileUri);
+      }
+    } catch (e) {
+      console.log("Failed to fetch order PDF", e);
+    } finally {
+      setDownloadingOrder(null);
+    }
+  };
+
   const getStatusPill = (pendDisp?: string | null) => {
     const normalized = pendDisp ? String(pendDisp).toUpperCase() : "";
     const isPending = normalized === "P" || normalized === "PENDING";
@@ -281,37 +313,12 @@ const HighCourtResultScreen: React.FC = () => {
                                     const key = `${String(
                                       ord.order_no
                                     )}_${String(ord.order_date)}`;
-                                    try {
-                                      setDownloadingOrder(key);
-                                      const { pdfBase64 } =
-                                        await highCourtApi.getOrderDownloadUrl(
-                                          String(data.detail.cino),
-                                          String(ord.order_no),
-                                          String(ord.order_date)
-                                        );
-
-                                      if (!pdfBase64) return;
-                                      const fileUri = `${
-                                        FileSystem.cacheDirectory
-                                      }order_${String(ord.order_no)}.pdf`;
-                                      await FileSystem.writeAsStringAsync(
-                                        fileUri,
-                                        pdfBase64,
-                                        { encoding: "base64" }
-                                      );
-                                      if (await Sharing.isAvailableAsync()) {
-                                        await Sharing.shareAsync(fileUri);
-                                      } else {
-                                        console.log("PDF saved at:", fileUri);
-                                      }
-                                    } catch (e) {
-                                      console.log(
-                                        "Failed to fetch order PDF",
-                                        e
-                                      );
-                                    } finally {
-                                      setDownloadingOrder(null);
-                                    }
+                                    await downloadOrderPdf({
+                                      cino: String(data.detail.cino),
+                                      orderNo: String(ord.order_no),
+                                      orderDate: String(ord.order_date),
+                                      downloadKey: key,
+                                    });
                                   }}
                                 >
                                   <FontAwesome
@@ -396,36 +403,12 @@ const HighCourtResultScreen: React.FC = () => {
                                   <Text
                                     style={styles.downloadLink}
                                     onPress={async () => {
-                                      try {
-                                        setDownloadingOrder(downloadKey);
-                                        const { pdfBase64 } =
-                                          await highCourtApi.getOrderDownloadUrl(
-                                            String(data.detail.cino),
-                                            String(sec.order_no),
-                                            String(sec.order_date)
-                                          );
-                                        if (!pdfBase64) return;
-                                        const fileUri = `${
-                                          FileSystem.cacheDirectory
-                                        }order_${String(sec.order_no)}.pdf`;
-                                        await FileSystem.writeAsStringAsync(
-                                          fileUri,
-                                          pdfBase64,
-                                          { encoding: "base64" }
-                                        );
-                                        if (await Sharing.isAvailableAsync()) {
-                                          await Sharing.shareAsync(fileUri);
-                                        } else {
-                                          console.log("PDF saved at:", fileUri);
-                                        }
-                                      } catch (e) {
-                                        console.log(
-                                          "Failed to fetch order PDF",
-                                          e
-                                        );
-                                      } finally {
-                                        setDownloadingOrder(null);
-                                      }
+                                      await downloadOrderPdf({
+                                        cino: String(data.detail.cino),
+                                        orderNo: String(sec.order_no),
+                                        orderDate: String(sec.order_date),
+                                        downloadKey,
+                                      });
                                     }}
                                   >
                                     <FontAwesome

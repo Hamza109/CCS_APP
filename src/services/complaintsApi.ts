@@ -23,10 +23,12 @@ export interface ComplaintResponse extends ComplaintPayload {
 
 export const complaintsApi = {
   submitComplaint: async (
-    payload: ComplaintPayload
+    payload: ComplaintPayload,
   ): Promise<ApiResponse<ComplaintResponse>> => {
     try {
-      const response = await api.post("/api/complaints", payload, { timeout: 20000 });
+      const response = await api.post("/api/complaints", payload, {
+        timeout: 20000,
+      });
       const data = response.data;
       if (!("success" in data)) {
         return { success: true, data } as ApiResponse<ComplaintResponse>;

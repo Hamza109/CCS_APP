@@ -19,7 +19,7 @@ import { useAppSelector } from "../../src/store";
 type TabKey = "rules" | "acts" | "notifications";
 
 const UtActsScreen: React.FC = () => {
-  const FILE_BASE_URL = "http://10.149.13.209/ccsproject/";
+  const FILE_BASE_URL = "https://enyayasarathi.jk.gov.in/";
   const theme = useAppSelector((s) => s.app.theme);
   const [activeTab, setActiveTab] = React.useState<TabKey>("rules");
 

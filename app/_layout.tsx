@@ -23,7 +23,7 @@ function AppContent() {
   const { loadCachedData } = useOfflineData();
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const locationPermissionRequestKey = useAppSelector(
-    (state) => state.app.locationPermissionRequestToken
+    (state) => state.app.locationPermissionRequestToken,
   );
 
   useEffect(() => {

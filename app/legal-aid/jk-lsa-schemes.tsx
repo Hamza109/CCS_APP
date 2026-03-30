@@ -10,7 +10,7 @@ import { useSchemes } from "../../src/hooks/useSchemes";
 import { Scheme } from "../../src/services/schemesApi";
 import { useAppSelector } from "../../src/store";
 
-const FILE_BASE_URL = "http://10.149.13.209/ccsproject/"; // concat with file_path
+const FILE_BASE_URL = "https://enyayasarathi.jk.gov.in/"; // concat with file_path
 
 const JkLsaSchemesScreen: React.FC = () => {
   const theme = useAppSelector((state) => state.app.theme);

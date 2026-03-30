@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import React, { ReactNode } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 
 interface BlueHeaderProps {
   title: string;
@@ -8,6 +9,8 @@ interface BlueHeaderProps {
   rightIconName?: keyof typeof Ionicons.glyphMap;
   onRightPress?: () => void;
   showRightBadge?: boolean;
+  showBackButton?: boolean;
+  onBackPress?: () => void;
   children?: ReactNode;
 }
 
@@ -17,12 +20,41 @@ const BlueHeader: React.FC<BlueHeaderProps> = ({
   rightIconName = "notifications",
   onRightPress,
   showRightBadge = true,
+  showBackButton = Platform.OS === "ios",
+  onBackPress,
   children,
 }) => {
+  const router = useRouter();
+
+  const handleBackPress = () => {
+    if (onBackPress) {
+      onBackPress();
+      return;
+    }
+
+    if (router.canGoBack()) {
+      router.back();
+    }
+  };
+
   return (
     <View style={styles.blueHeader}>
       <View style={styles.headerContent}>
-        <Text style={styles.headerTitle}>{title}</Text>
+        <View style={styles.leftContent}>
+          {Platform.OS === "ios" && (
+            <Pressable
+              onPress={handleBackPress}
+              hitSlop={8}
+              style={({ pressed }) => [
+                styles.backButton,
+                pressed && { opacity: 0.7 },
+              ]}
+            >
+              <Ionicons name='chevron-back' size={24} color='#FFFFFF' />
+            </Pressable>
+          )}
+          <Text style={styles.headerTitle}>{title}</Text>
+        </View>
         {onRightPress ? (
           <Pressable
             onPress={onRightPress}
@@ -56,6 +88,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingBottom: 8,
   },
+  leftContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
   headerTitle: {
     fontSize: 20,
     fontWeight: "bold",
@@ -68,6 +105,10 @@ const styles = StyleSheet.create({
   notificationButton: {
     position: "relative",
     padding: 8,
+  },
+  backButton: {
+    paddingRight: 4,
+    paddingVertical: 4,
   },
   notificationBadge: {
     position: "absolute",

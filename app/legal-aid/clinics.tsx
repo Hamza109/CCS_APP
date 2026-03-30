@@ -58,7 +58,7 @@ const LegalAidClinicsScreen: React.FC = () => {
     >
       <StatusBar style='light' backgroundColor='#1E3A8A' />
 
-      <BlueHeader title='List of legal aid clinics' />
+      <BlueHeader  title='List of legal aid clinics' />
 
       <View style={styles.mainContent}>
         <View style={styles.pickerContainer}>

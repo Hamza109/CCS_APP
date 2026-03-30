@@ -1,7 +1,7 @@
 import axios from "axios";
+import { router } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import { Alert } from "react-native";
-import { router } from "expo-router";
 import { store } from "../store";
 import { clearToken } from "../store/slices/authSlice";
 import { decryptApiPayload } from "../utils/decryption";
@@ -11,8 +11,6 @@ import { encryptPayload } from "../utils/encryption";
 // For physical devices, uncomment and use your computer's IP address:
 // export const getLocalApiUrl = () => "http://192.168.1.100:8000";
 
-
-
 // Base API configuration
 export const API_BASE_URL = "https://enyayasarathi.jk.gov.in/enyayasarathi"; // Replace with actual API URL
 
@@ -21,6 +19,8 @@ const api = axios.create({
   timeout: 60000,
   headers: {
     "Content-Type": "application/json",
+    Accept: "application/json",
+
   },
 });
 
@@ -28,7 +28,11 @@ const api = axios.create({
 let isSessionTimeoutAlertVisible = false;
 
 // Log base URL once at startup for debugging preview builds
-console.log("API base:", api.defaults.baseURL);
+const isDev = (global as any).__DEV__ !== undefined ? (global as any).__DEV__ : true;
+if (isDev) {
+  console.log("API_BASE_URL:", API_BASE_URL);
+  console.log("API axios baseURL:", api.defaults.baseURL);
+}
 
 // Request interceptor for authentication and encryption
 api.interceptors.request.use(
@@ -54,7 +58,7 @@ api.interceptors.request.use(
           console.log("📤 POST Request to:", endpoint);
           console.log(
             "📦 Original POST Payload:",
-            JSON.stringify(config.data, null, 2)
+            JSON.stringify(config.data, null, 2),
           );
 
           // Encrypt the payload
@@ -80,7 +84,7 @@ api.interceptors.request.use(
           // Log final payload being sent
           console.log(
             "📤 Final payload being sent:",
-            JSON.stringify(config.data, null, 2)
+            JSON.stringify(config.data, null, 2),
           );
           console.log("📤 Encrypted string format check:", {
             hasEncrypted: !!config.data.encrypted,
@@ -98,7 +102,7 @@ api.interceptors.request.use(
           });
           console.log(
             "📤 Full URL:",
-            `${config.baseURL || ""}${config.url || ""}`
+            `${config.baseURL || ""}${config.url || ""}`,
           );
         } catch (error: any) {
           console.error("❌ Failed to encrypt payload:", {
@@ -115,7 +119,7 @@ api.interceptors.request.use(
 
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // Response interceptor for decryption + error handling
@@ -132,7 +136,7 @@ api.interceptors.response.use(
       console.log("🔒 Encrypted response detected from:", endpoint);
       console.log(
         "🔒 Encrypted payload preview:",
-        JSON.stringify(payload).substring(0, 200)
+        JSON.stringify(payload).substring(0, 200),
       );
 
       // Attempt to decrypt if payload has iv + data and endpoint is not a district endpoint
@@ -150,6 +154,9 @@ api.interceptors.response.use(
       const url = error?.config?.url as string | undefined;
       const hasAuthHeader = !!error?.config?.headers?.Authorization;
       console.log("ERR:", error?.message, status, url);
+      console.log("ERROR MESSAGE:", error?.message);
+      console.log("ERROR CODE:", error?.code);
+      console.log("FULL ERROR:", JSON.stringify(error, null, 2));
 
       // Global session timeout handling:
       // - Trigger only for authenticated requests (with Authorization header)
@@ -174,7 +181,10 @@ api.interceptors.response.use(
                 try {
                   await SecureStore.deleteItemAsync("auth_token");
                 } catch (tokenError) {
-                  console.log("Error clearing token on session timeout:", tokenError);
+                  console.log(
+                    "Error clearing token on session timeout:",
+                    tokenError,
+                  );
                 }
 
                 // Clear Redux auth state
@@ -184,7 +194,10 @@ api.interceptors.response.use(
                 try {
                   router.replace("/(auth)/login");
                 } catch (navError) {
-                  console.log("Error navigating to login after session timeout:", navError);
+                  console.log(
+                    "Error navigating to login after session timeout:",
+                    navError,
+                  );
                 } finally {
                   // Allow future session-timeout alerts after handling this one
                   isSessionTimeoutAlertVisible = false;
@@ -194,12 +207,12 @@ api.interceptors.response.use(
           ],
           {
             cancelable: false,
-          }
+          },
         );
       }
     } catch {}
     return Promise.reject(error);
-  }
+  },
 );
 
 // Note: Legal Aid Services have been moved to src/services/legalAidApi.ts

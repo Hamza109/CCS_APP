@@ -8,7 +8,7 @@ import BlueHeader from "../../src/components/ui/BlueHeader";
 import Card from "../../src/components/ui/Card";
 import { advocatesWelfareContent } from "../../src/data/advocatesWelfare";
 
-const FILE_BASE_URL = "http://10.149.13.209/ccsproject/";
+const FILE_BASE_URL = "https://enyayasarathi.jk.gov.in/";
 
 const WelfareSchemesScreen: React.FC = () => {
   const data = advocatesWelfareContent.downloads;
